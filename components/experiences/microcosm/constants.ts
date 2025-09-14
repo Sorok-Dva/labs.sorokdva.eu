@@ -1,0 +1,91 @@
+import type { Settings } from "./types"
+
+export const DEFAULTS: Settings = {
+  width: 1200,
+  height: 720,
+  initialHerbivores: 80,
+  initialPredators: 6,
+  foodCount: 450,
+  foodValue: 12,
+  toxinCount: 3,
+  trailFade: 0.12,
+  worldFriction: 0.985,
+  metabolism: 0.02,
+  reproductionCost: 16,
+  splitThreshold: 38,
+  mutationRate: 0.06,
+  wallBounce: 0.7,
+  maxEntitiesCap: 1200,
+  predAttackRange: 14,
+  predAttackDamage: 20,
+  predAttackCooldown: 10,
+  predLifesteal: 0.6,
+  herdDefenseRange: 26,
+  herdDefenseCount: 6,
+  herdDefenseDamage: 2,
+  herdDefenseMaxStacks: 4,
+}
+
+export const PRESETS: Record<string, Partial<Settings> & { label: string; hint: string }> = {
+  gentleSoup: {
+    label: "Gentle Soup",
+    hint: "Équilibre doux, couleurs pastel, émergence lente",
+    initialHerbivores: 120,
+    initialPredators: 2,
+    foodCount: 520,
+    trailFade: 0.12,
+    mutationRate: 0.04,
+    metabolism: 0.017,
+  },
+  neonNight: {
+    label: "Neon Night",
+    hint: "Peu de créatures, contrastes forts, mouvements élégants",
+    initialHerbivores: 50,
+    initialPredators: 10,
+    foodCount: 300,
+    trailFade: 0.14,
+    mutationRate: 0.08,
+    metabolism: 0.028,
+  },
+  predatorChaos: {
+    label: "Predator–Prey Chaos",
+    hint: "Dynamique proie/prédateur très active",
+    initialHerbivores: 100,
+    initialPredators: 22,
+    foodCount: 420,
+    trailFade: 0.12,
+    mutationRate: 0.1,
+    metabolism: 0.03,
+  },
+  slowGarden: {
+    label: "Slow Garden",
+    hint: "Économie d’énergie, reproduction rare, ambiance contemplative",
+    initialHerbivores: 90,
+    initialPredators: 3,
+    foodCount: 600,
+    trailFade: 0.1,
+    mutationRate: 0.03,
+    metabolism: 0.014,
+  },
+}
+
+export const HELP_TEXTS = {
+  mutationRate:
+    "Probabilité qu’un enfant mute (couleur, taille, vitesse, sens, efficacité). Plus haut = diversité/chaos, plus bas = lignées stables",
+  metabolism:
+    "Coût énergétique par tick. Plus haut = créatures affamées, cycles rapides. Plus bas = univers contemplatif",
+  trailFade: "Opacité du fondu d’arrière-plan. Faible = traînées longues et fluides. Élevé = rendu net (peu de traces)",
+  foodCount:
+    "Quantité cible de nourriture en circulation. Plus haut = écosystème abondant (explosions de population). Plus bas = pression sélective",
+  splitThreshold:
+    "Énergie requise pour se diviser (reproduction). Plus haut = reproduction rare, lignées plus robustes",
+  reproductionCost: "Coût énergétique de la division. Plus haut = les parents s’épuisent en se reproduisant",
+  predAttackDamage: "Dégâts infligés par une morsure de prédateur. Plus haut = proies abattues plus vite",
+  predAttackCooldown: "Frames entre deux morsures. Plus bas = attaques plus fréquentes",
+  predAttackRange: "Portée de contact pour qu’une morsure connecte (autour des corps)",
+  predLifesteal: "Part des dégâts convertie en énergie pour le prédateur (survie en mêlée)",
+  herdDefenseCount: 'Nombre d’herbivores requis, proches du prédateur, pour déclencher le "mobbing"',
+  herdDefenseDamage: 'Dégâts par tick infligés au prédateur par le groupe (échelle avec les "stacks")',
+  herdDefenseRange: 'Portée à laquelle les herbivores sont comptés comme "défenseurs"',
+  herdDefenseMaxStacks: "Nombre maximum de paliers additionnels au-dessus du seuil (limite la létalité en meute)",
+}
