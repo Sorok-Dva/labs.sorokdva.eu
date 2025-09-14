@@ -1,0 +1,99 @@
+{
+  "header": {
+    "title": "Microcosm — Artificial Life",
+    "subtitle": "An emergent predator–prey ecosystem; each creature has a tiny genome. Explore with mouse wheel and Ctrl+drag."
+  },
+  "stats": { "herbivores": "Herbivores", "predators": "Predators", "food": "Food" },
+  "controls": {
+    "title": "Microcosm Controls",
+    "presets": "Presets",
+    "display": "Display",
+    "trails": "Trails",
+    "colorMode": "Color mode",
+    "simulation": "Simulation",
+    "combat": "Combat",
+    "actions": "Actions",
+    "buttons": { "play": "Play", "pause": "Pause", "reset": "Reset", "snapshot": "Snapshot" },
+    "sliders": {
+      "mutation": "Mutation",
+      "metabolism": "Metabolism",
+      "trailFade": "Trail fade",
+      "foodCount": "Target food",
+      "splitThreshold": "Split threshold",
+      "reproductionCost": "Reproduction cost",
+      "predAttackDamage": "Bite damage",
+      "predAttackCooldown": "Bite cooldown",
+      "predAttackRange": "Bite range",
+      "predLifesteal": "Lifesteal",
+      "herdDefenseCount": "Herd threshold",
+      "herdDefenseDamage": "Herd damage",
+      "herdDefenseRange": "Herd range",
+      "herdDefenseMaxStacks": "Herd max stacks",
+      "socialFollowDuration": "Follow duration",
+      "socialFollowStrength": "Follow strength",
+      "socialRebelProb": "Rebel probability"
+    },
+    "social": { "title": "Social", "familyFollow": "Family follow" }
+  },
+  "help": {
+    "mutationRate": "Probability a child mutates (color, size, speed, sense, efficiency). Higher = diversity/chaos; lower = stable lineages",
+    "metabolism": "Energy cost per tick. Higher = hungrier creatures, faster cycles. Lower = contemplative universe",
+    "trailFade": "Background fade opacity. Low = long smooth trails. High = crisp rendering (few traces)",
+    "foodCount": "Target amount of circulating food. Higher = abundant ecosystem (population booms). Lower = selective pressure",
+    "splitThreshold": "Energy required to divide (reproduce). Higher = rarer reproduction, sturdier lineages",
+    "reproductionCost": "Energy cost of division. Higher = parents exhaust themselves reproducing",
+    "predAttackDamage": "Damage dealt by a predator bite. Higher = prey felled faster",
+    "predAttackCooldown": "Frames between two bites. Lower = more frequent attacks",
+    "predAttackRange": "Contact range for a bite to connect (around bodies)",
+    "predLifesteal": "Share of damage converted into energy for the predator (melee survival)",
+    "herdDefenseCount": "Herbivores near the predator required to trigger mobbing",
+    "herdDefenseDamage": "Damage per tick dealt to the predator by the group (scales with stacks)",
+    "herdDefenseRange": "Range at which herbivores are counted as defenders",
+    "herdDefenseMaxStacks": "Maximum additional tiers above threshold (caps herd lethality)"
+  },
+  "presets": {
+    "gentleSoup": { "label": "Gentle Soup", "hint": "Soft balance, pastel colors, slow emergence" },
+    "neonNight": { "label": "Neon Night", "hint": "Few creatures, strong contrast, elegant moves" },
+    "predatorChaos": { "label": "Predator–Prey Chaos", "hint": "Very active prey/predator dynamics" },
+    "slowGarden": { "label": "Slow Garden", "hint": "Energy economy, rare reproduction, contemplative mood" }
+  },
+  "actions": { "feed": "Feed", "toxin": "Toxin", "predator": "Predator" },
+  "hud": {
+    "fps": "FPS",
+    "herbivores": "Herbivores",
+    "predators": "Predators",
+    "food": "Food",
+    "paused": "PAUSED",
+    "pressSpace": "Press SPACE to play",
+    "hint1": "Wheel=zoom • Drag=pan • Click cell=info",
+    "hint2": "Click empty=menu • Ctrl/Shift/Alt+click=direct"
+  },
+  "cell": {
+    "cell": "Cell",
+    "herbivore": "Herbivore",
+    "predator": "Predator",
+    "gen": "Gen",
+    "energy": "Energy",
+    "age": "Age",
+    "position": "Position",
+    "speed": "Speed",
+    "genome": "Genome",
+    "size": "Size",
+    "maxSpeed": "Max speed",
+    "sense": "Sense",
+    "efficiency": "Efficiency",
+    "lineage": "Lineage",
+    "parent": "Parent",
+    "children": "Children",
+    "noChildren": "No living children",
+    "juvenile": "Juvenile",
+    "follow": "Follow",
+    "following": "Following"
+  },
+  "menu": {
+    "feed": "Feed (Key F/Ctrl+click)",
+    "toxin": "Poison (Key T/Shift+click)",
+    "predator": "Predator (Key P/Alt+click)"
+  },
+  "lang": { "fr": "FR", "en": "EN" }
+}

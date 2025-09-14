@@ -8,6 +8,7 @@ import { ControlPanel } from "./control-panel"
 import { CellInfoPanel } from "./cell-info-panel"
 import { ContextMenu } from "./context-menu"
 import { type Camera, createCamera, updateCamera, screenToWorld, isInViewport } from "./camera"
+import { useI18n } from '@/components/i18n/I18nProvider'
 
 export default function Microcosm() {
   // Refs
@@ -28,6 +29,7 @@ export default function Microcosm() {
   const [isTracking, setIsTracking] = useState(false)
 
   const [contextMenu, setContextMenu] = useState<{ position: { x: number; y: number }; worldPos: Vec2 } | null>(null)
+  const { t, lang, setLang } = useI18n()
 
   const cameraRef = useRef<Camera>(createCamera())
   const [isDragging, setIsDragging] = useState(false)
@@ -334,7 +336,7 @@ export default function Microcosm() {
 
       ctx.restore()
 
-      drawHud(hctx, world, width, height, running, fps, camera)
+      drawHud(hctx, world, width, height, running, fps, camera, t, vis)
 
       // FPS
       const now = performance.now()
@@ -350,7 +352,7 @@ export default function Microcosm() {
     }
     raf = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(raf)
-  }, [running, settings, fps, vis, selectedCell, isTracking])
+  }, [running, settings, fps, vis, selectedCell, isTracking, lang])
 
   useEffect(() => {
     if (selectedCell) {
@@ -830,6 +832,8 @@ export default function Microcosm() {
     running: boolean,
     fps: number,
     camera: Camera,
+    t: (k: string, fallback?: string) => string,
+    vis: VisSettings,
   ) => {
     hctx.clearRect(0, 0, width, height)
 
@@ -932,19 +936,16 @@ export default function Microcosm() {
 
     hctx.font = `${14 * dpr}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas`
     hctx.fillStyle = "rgba(220,230,255,0.85)"
-    hctx.fillText(`FPS: ${fps}`, x + 14 * dpr, y + 22 * dpr)
-    hctx.fillText(`Herbivores: ${stats.herbs}`, x + 14 * dpr, y + 40 * dpr)
-    hctx.fillText(`Predators: ${stats.preds}`, x + 14 * dpr, y + 58 * dpr)
-    hctx.fillText(`Food: ${stats.food}`, x + 140 * dpr, y + 40 * dpr)
+    hctx.fillText(`${t('microcosm.hud.fps','FPS')}: ${fps}`, x + 14 * dpr, y + 22 * dpr)
+    hctx.fillText(`${t('microcosm.hud.herbivores','Herbivores')}: ${stats.herbs}`, x + 14 * dpr, y + 40 * dpr)
+    hctx.fillText(`${t('microcosm.hud.predators','Prédateurs')}: ${stats.preds}`, x + 14 * dpr, y + 58 * dpr)
+    hctx.fillText(`${t('microcosm.hud.food','Nourriture')}: ${stats.food}`, x + 140 * dpr, y + 40 * dpr)
     hctx.fillText(`Zoom: ${camera.zoom.toFixed(1)}x`, x + 140 * dpr, y + 58 * dpr)
     hctx.fillText(`Pos: ${Math.round(camera.x)}, ${Math.round(camera.y)}`, x + 14 * dpr, y + 76 * dpr)
-    hctx.fillText(
-      `Trails: ${vis.trailsEnabled ? (vis.trailColorMode === "byGenome" ? "colored" : "mono") : "off"}`,
-      x + 14 * dpr,
-      y + 94 * dpr,
-    )
-    hctx.fillText(`Wheel=zoom • Drag=pan • Click cell=info`, x + 14 * dpr, y + 112 * dpr)
-    hctx.fillText(`Click empty=menu • Ctrl/Shift/Alt+click=direct`, x + 14 * dpr, y + 130 * dpr)
+    const trailsLabel = vis.trailsEnabled ? (vis.trailColorMode === 'byGenome' ? 'colored' : 'mono') : 'off'
+    hctx.fillText(`${t('microcosm.controls.trails','Traînées')}: ${trailsLabel}`, x + 14 * dpr, y + 94 * dpr)
+    hctx.fillText(t('microcosm.hud.hint1','Molette=zoom • Glisser=déplacer • Clic cellule=infos'), x + 14 * dpr, y + 112 * dpr)
+    hctx.fillText(t('microcosm.hud.hint2','Clic vide=menu • Ctrl/Shift/Alt+clic=direct'), x + 14 * dpr, y + 130 * dpr)
   }
 
   // Handlers
@@ -998,26 +999,25 @@ export default function Microcosm() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <div className="flex-1">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-                Microcosm — Vie artificielle
-              </h1>
-              <p className="text-slate-200 text-sm mt-1">
-                Un écosystème émergent proie–prédateur, où chaque créature possède un petit génome. Explorez avec la
-                molette et Ctrl+glisser.
-              </p>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">{t('microcosm.header.title','Microcosm — Vie artificielle')}</h1>
+              <p className="text-slate-200 text-sm mt-1">{t('microcosm.header.subtitle','Un écosystème émergent proie–prédateur, où chaque créature possède un petit génome. Explorez avec la molette et Ctrl+glisser.')}</p>
             </div>
-            <div className="hidden md:flex gap-4 text-sm">
+            <div className="hidden md:flex gap-4 text-sm items-center">
               <div className="text-center">
                 <div className="text-emerald-400 font-mono text-lg">{stats.herbs}</div>
-                <div className="text-slate-500 text-xs">Herbivores</div>
+                <div className="text-slate-500 text-xs">{t('microcosm.stats.herbivores','Herbivores')}</div>
               </div>
               <div className="text-center">
                 <div className="text-red-400 font-mono text-lg">{stats.preds}</div>
-                <div className="text-slate-500 text-xs">Prédateurs</div>
+                <div className="text-slate-500 text-xs">{t('microcosm.stats.predators','Prédateurs')}</div>
               </div>
               <div className="text-center">
                 <div className="text-cyan-400 font-mono text-lg">{stats.food}</div>
-                <div className="text-slate-500 text-xs">Nourriture</div>
+                <div className="text-slate-500 text-xs">{t('microcosm.stats.food','Nourriture')}</div>
+              </div>
+              <div className="flex items-center gap-2 ml-4">
+                <button className={`px-2 py-1 rounded ${lang==='fr'?'bg-slate-700 text-white':'bg-slate-800 text-slate-300'}`} onClick={()=>setLang('fr')}>{t('lang.fr','FR')}</button>
+                <button className={`px-2 py-1 rounded ${lang==='en'?'bg-slate-700 text-white':'bg-slate-800 text-slate-300'}`} onClick={()=>setLang('en')}>{t('lang.en','EN')}</button>
               </div>
             </div>
           </div>
@@ -1041,6 +1041,7 @@ export default function Microcosm() {
               }}
               onSelectCell={handleSelectCell}
               allCells={worldRef.current.cells}
+              t={t}
               isTracking={isTracking}
               onToggleTracking={() => {
                 setIsTracking((v) => {
@@ -1062,6 +1063,7 @@ export default function Microcosm() {
               position={contextMenu.position}
               onAction={handleContextMenuAction}
               onClose={() => setContextMenu(null)}
+              t={t}
             />
           )}
         </div>
@@ -1080,6 +1082,7 @@ export default function Microcosm() {
             onToggleRun={toggleRun}
             onReset={resetWorld}
             onSnapshot={snapshot}
+            t={t}
             onSpawnFood={() => {
               const camera = cameraRef.current
               dropFoodCluster(

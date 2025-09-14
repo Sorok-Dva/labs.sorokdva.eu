@@ -5,6 +5,8 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
+import { I18nProvider } from "@/components/i18n/I18nProvider"
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher"
 
 export const metadata: Metadata = {
   title: "SorokDva Labs - Cabinet des Curiosités Numériques",
@@ -22,7 +24,10 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        <I18nProvider>
+          <LanguageSwitcher />
+          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        </I18nProvider>
         <Analytics />
       </body>
     </html>

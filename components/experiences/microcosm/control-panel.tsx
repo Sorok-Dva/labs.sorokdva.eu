@@ -26,6 +26,7 @@ interface ControlPanelProps {
   onSpawnFood: () => void
   onSpawnToxin: () => void
   onSpawnPredator: () => void
+  t: (k: string, fallback?: string) => string
 }
 
 interface SliderControlProps {
@@ -89,15 +90,16 @@ export function ControlPanel({
   onSpawnFood,
   onSpawnToxin,
   onSpawnPredator,
+  t,
 }: ControlPanelProps) {
   return (
     <Card className="w-full max-w-sm bg-slate-900/95 border-slate-700 backdrop-blur-sm">
       <CardHeader className="pb-1">
-        <CardTitle className="text-lg">Contrôles Microcosm</CardTitle>
+        <CardTitle className="text-lg">{t('microcosm.controls.title','Contrôles Microcosm')}</CardTitle>
         <div className="text-sm">
-          <Badge variant="secondary">🌱 {stats.herbs} herbivores</Badge>
-          <Badge variant="destructive">🦁 {stats.preds} prédateurs</Badge>
-          <Badge variant="outline">🍃 {stats.food} nourriture</Badge>
+          <Badge variant="secondary">🌱 {stats.herbs} {t('microcosm.stats.herbivores','herbivores')}</Badge>
+          <Badge variant="destructive">🦁 {stats.preds} {t('microcosm.stats.predators','prédateurs')}</Badge>
+          <Badge variant="outline">🍃 {stats.food} {t('microcosm.stats.food','nourriture')}</Badge>
         </div>
       </CardHeader>
 
@@ -106,7 +108,7 @@ export function ControlPanel({
         <div className="flex gap-2">
           <Button onClick={onToggleRun} className="flex-1">
             {running ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-            {running ? "Pause" : "Play"}
+            {running ? t('microcosm.controls.buttons.pause','Pause') : t('microcosm.controls.buttons.play','Play')}
           </Button>
           <Button variant="outline" onClick={onReset}>
             <RotateCcw className="w-4 h-4" />
@@ -118,23 +120,23 @@ export function ControlPanel({
         
         {/* Actions rapides */}
         <div className="space-y-3">
-          <Label className="text-sm font-semibold">Actions</Label>
+          <Label className="text-sm font-semibold">{t('microcosm.controls.actions','Actions')}</Label>
           <div className="grid grid-cols-3 gap-2">
             <Button variant="outline" size="sm" onClick={onSpawnFood} className="text-xs bg-transparent">
-              🍃 Nourrir
+              🍃 {t('microcosm.actions.feed','Nourrir')}
             </Button>
             <Button variant="outline" size="sm" onClick={onSpawnToxin} className="text-xs bg-transparent">
-              ☠️ Toxine
+              ☠️ {t('microcosm.actions.toxin','Toxine')}
             </Button>
             <Button variant="outline" size="sm" onClick={onSpawnPredator} className="text-xs bg-transparent">
-              🦁 Prédateur
+              🦁 {t('microcosm.actions.predator','Prédateur')}
             </Button>
           </div>
         </div>
 
         {/* Presets */}
         <div className="space-y-3">
-          <Label className="text-sm font-semibold">Presets</Label>
+          <Label className="text-sm font-semibold">{t('microcosm.controls.presets','Presets')}</Label>
           <div className="grid grid-cols-2 gap-2">
             {Object.entries(PRESETS).map(([key, preset]) => (
               <Button
@@ -144,20 +146,18 @@ export function ControlPanel({
                 onClick={() => onPresetChange(key)}
                 className="text-xs"
               >
-                {preset.label}
+                {t(`microcosm.presets.${key}.label`, preset.label)}
               </Button>
             ))}
           </div>
-          <p className="text-xs text-slate-400">{PRESETS[presetKey]?.hint}</p>
+          <p className="text-xs text-slate-400">{t(`microcosm.presets.${presetKey}.hint`, PRESETS[presetKey]?.hint)}</p>
         </div>
 
         {/* Paramètres visuels */}
         <div className="space-y-3">
-          <Label className="text-sm font-semibold">Affichage</Label>
+          <Label className="text-sm font-semibold">{t('microcosm.controls.display','Affichage')}</Label>
           <div className="flex items-center justify-between">
-            <Label htmlFor="trails" className="text-sm">
-              Traînées
-            </Label>
+            <Label htmlFor="trails" className="text-sm">{t('microcosm.controls.trails','Traînées')}</Label>
             <Switch
               id="trails"
               checked={visSettings.trailsEnabled}
@@ -166,7 +166,7 @@ export function ControlPanel({
           </div>
           {visSettings.trailsEnabled && (
             <div className="flex items-center justify-between">
-              <Label className="text-sm">Mode couleur</Label>
+              <Label className="text-sm">{t('microcosm.controls.colorMode','Mode couleur')}</Label>
               <Button
                 variant="outline"
                 size="sm"
@@ -188,11 +188,11 @@ export function ControlPanel({
 
         {/* Paramètres de simulation */}
         <div className="space-y-4">
-          <Label className="text-sm font-semibold">Simulation</Label>
+          <Label className="text-sm font-semibold">{t('microcosm.controls.simulation','Simulation')}</Label>
 
           <SliderControl
-            label="Mutation"
-            help={HELP_TEXTS.mutationRate}
+            label={t('microcosm.controls.sliders.mutation','Mutation')}
+            help={t('microcosm.help.mutationRate', HELP_TEXTS.mutationRate)}
             min={0}
             max={0.3}
             step={0.005}
@@ -201,8 +201,8 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Métabolisme"
-            help={HELP_TEXTS.metabolism}
+            label={t('microcosm.controls.sliders.metabolism','Métabolisme')}
+            help={t('microcosm.help.metabolism', HELP_TEXTS.metabolism)}
             min={0.005}
             max={0.06}
             step={0.001}
@@ -211,8 +211,8 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Fondu traînées"
-            help={HELP_TEXTS.trailFade}
+            label={t('microcosm.controls.sliders.trailFade','Fondu traînées')}
+            help={t('microcosm.help.trailFade', HELP_TEXTS.trailFade)}
             min={0.005}
             max={0.25}
             step={0.002}
@@ -221,8 +221,8 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Nourriture cible"
-            help={HELP_TEXTS.foodCount}
+            label={t('microcosm.controls.sliders.foodCount','Nourriture cible')}
+            help={t('microcosm.help.foodCount', HELP_TEXTS.foodCount)}
             min={50}
             max={1000}
             step={10}
@@ -231,8 +231,8 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Seuil division"
-            help={HELP_TEXTS.splitThreshold}
+            label={t('microcosm.controls.sliders.splitThreshold','Seuil division')}
+            help={t('microcosm.help.splitThreshold', HELP_TEXTS.splitThreshold)}
             min={12}
             max={80}
             step={1}
@@ -241,8 +241,8 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Coût reproduction"
-            help={HELP_TEXTS.reproductionCost}
+            label={t('microcosm.controls.sliders.reproductionCost','Coût reproduction')}
+            help={t('microcosm.help.reproductionCost', HELP_TEXTS.reproductionCost)}
             min={4}
             max={40}
             step={1}
@@ -253,11 +253,11 @@ export function ControlPanel({
 
         {/* Paramètres de combat */}
         <div className="space-y-4 pt-2 border-t border-slate-700/50">
-          <Label className="text-sm font-semibold">Combat</Label>
+          <Label className="text-sm font-semibold">{t('microcosm.controls.combat','Combat')}</Label>
 
           <SliderControl
-            label="Dégâts morsure"
-            help={HELP_TEXTS.predAttackDamage}
+            label={t('microcosm.controls.sliders.predAttackDamage','Dégâts morsure')}
+            help={t('microcosm.help.predAttackDamage', HELP_TEXTS.predAttackDamage)}
             min={4}
             max={40}
             step={1}
@@ -266,8 +266,8 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Cooldown morsure"
-            help={HELP_TEXTS.predAttackCooldown}
+            label={t('microcosm.controls.sliders.predAttackCooldown','Cooldown morsure')}
+            help={t('microcosm.help.predAttackCooldown', HELP_TEXTS.predAttackCooldown)}
             min={4}
             max={40}
             step={1}
@@ -276,8 +276,8 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Portée morsure"
-            help={HELP_TEXTS.predAttackRange}
+            label={t('microcosm.controls.sliders.predAttackRange','Portée morsure')}
+            help={t('microcosm.help.predAttackRange', HELP_TEXTS.predAttackRange)}
             min={6}
             max={30}
             step={1}
@@ -286,8 +286,8 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Vol de vie"
-            help={HELP_TEXTS.predLifesteal}
+            label={t('microcosm.controls.sliders.predLifesteal','Vol de vie')}
+            help={t('microcosm.help.predLifesteal', HELP_TEXTS.predLifesteal)}
             min={0}
             max={1}
             step={0.05}
@@ -296,8 +296,8 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Seuil troupeau"
-            help={HELP_TEXTS.herdDefenseCount}
+            label={t('microcosm.controls.sliders.herdDefenseCount','Seuil troupeau')}
+            help={t('microcosm.help.herdDefenseCount', HELP_TEXTS.herdDefenseCount)}
             min={2}
             max={20}
             step={1}
@@ -306,8 +306,8 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Dégâts troupeau"
-            help={HELP_TEXTS.herdDefenseDamage}
+            label={t('microcosm.controls.sliders.herdDefenseDamage','Dégâts troupeau')}
+            help={t('microcosm.help.herdDefenseDamage', HELP_TEXTS.herdDefenseDamage)}
             min={0}
             max={10}
             step={0.5}
@@ -316,8 +316,8 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Portée troupeau"
-            help={HELP_TEXTS.herdDefenseRange}
+            label={t('microcosm.controls.sliders.herdDefenseRange','Portée troupeau')}
+            help={t('microcosm.help.herdDefenseRange', HELP_TEXTS.herdDefenseRange)}
             min={10}
             max={80}
             step={1}
@@ -326,8 +326,8 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Max stacks troupeau"
-            help={HELP_TEXTS.herdDefenseMaxStacks}
+            label={t('microcosm.controls.sliders.herdDefenseMaxStacks','Max stacks troupeau')}
+            help={t('microcosm.help.herdDefenseMaxStacks', HELP_TEXTS.herdDefenseMaxStacks)}
             min={0}
             max={12}
             step={1}
@@ -338,17 +338,15 @@ export function ControlPanel({
 
         {/* Paramètres sociaux */}
         <div className="space-y-4 pt-2 border-t border-slate-700/50">
-          <Label className="text-sm font-semibold">Social</Label>
+          <Label className="text-sm font-semibold">{t('microcosm.controls.social.title','Social')}</Label>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="social-follow" className="text-sm">
-              Suivi familial
-            </Label>
+            <Label htmlFor="social-follow" className="text-sm">{t('microcosm.controls.social.familyFollow','Suivi familial')}</Label>
             <Switch id="social-follow" checked={settings.socialFollowEnabled} onCheckedChange={(checked) => onSettingsChange({ socialFollowEnabled: checked })} />
           </div>
 
           <SliderControl
-            label="Durée suivi"
+            label={t('microcosm.controls.sliders.socialFollowDuration','Durée suivi')}
             min={60}
             max={900}
             step={10}
@@ -357,7 +355,7 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Force suivi"
+            label={t('microcosm.controls.sliders.socialFollowStrength','Force suivi')}
             min={0}
             max={0.6}
             step={0.01}
@@ -366,7 +364,7 @@ export function ControlPanel({
           />
 
           <SliderControl
-            label="Prob. rebelle"
+            label={t('microcosm.controls.sliders.socialRebelProb','Prob. rebelle')}
             min={0}
             max={0.5}
             step={0.01}

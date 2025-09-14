@@ -1,0 +1,99 @@
+{
+  "header": {
+    "title": "Microcosm — Vie artificielle",
+    "subtitle": "Un écosystème émergent proie–prédateur, où chaque créature possède un petit génome. Explorez avec la molette et Ctrl+glisser."
+  },
+  "stats": { "herbivores": "Herbivores", "predators": "Prédateurs", "food": "Nourriture" },
+  "controls": {
+    "title": "Contrôles Microcosm",
+    "presets": "Presets",
+    "display": "Affichage",
+    "trails": "Traînées",
+    "colorMode": "Mode couleur",
+    "simulation": "Simulation",
+    "combat": "Combat",
+    "actions": "Actions",
+    "buttons": { "play": "Play", "pause": "Pause", "reset": "Réinitialiser", "snapshot": "Capture" },
+    "sliders": {
+      "mutation": "Mutation",
+      "metabolism": "Métabolisme",
+      "trailFade": "Fondu traînées",
+      "foodCount": "Nourriture cible",
+      "splitThreshold": "Seuil division",
+      "reproductionCost": "Coût reproduction",
+      "predAttackDamage": "Dégâts morsure",
+      "predAttackCooldown": "Cooldown morsure",
+      "predAttackRange": "Portée morsure",
+      "predLifesteal": "Vol de vie",
+      "herdDefenseCount": "Seuil troupeau",
+      "herdDefenseDamage": "Dégâts troupeau",
+      "herdDefenseRange": "Portée troupeau",
+      "herdDefenseMaxStacks": "Max stacks troupeau",
+      "socialFollowDuration": "Durée suivi",
+      "socialFollowStrength": "Force suivi",
+      "socialRebelProb": "Prob. rebelle"
+    },
+    "social": { "title": "Social", "familyFollow": "Suivi familial" }
+  },
+  "help": {
+    "mutationRate": "Probabilité qu’un enfant mute (couleur, taille, vitesse, sens, efficacité). Plus haut = diversité/chaos, plus bas = lignées stables",
+    "metabolism": "Coût énergétique par tick. Plus haut = créatures affamées, cycles rapides. Plus bas = univers contemplatif",
+    "trailFade": "Opacité du fondu d’arrière-plan. Faible = traînées longues et fluides. Élevé = rendu net (peu de traces)",
+    "foodCount": "Quantité cible de nourriture en circulation. Plus haut = écosystème abondant (explosions de population). Plus bas = pression sélective",
+    "splitThreshold": "Énergie requise pour se diviser (reproduction). Plus haut = reproduction rare, lignées plus robustes",
+    "reproductionCost": "Coût énergétique de la division. Plus haut = les parents s’épuisent en se reproduisant",
+    "predAttackDamage": "Dégâts infligés par une morsure de prédateur. Plus haut = proies abattues plus vite",
+    "predAttackCooldown": "Frames entre deux morsures. Plus bas = attaques plus fréquentes",
+    "predAttackRange": "Portée de contact pour qu’une morsure connecte (autour des corps)",
+    "predLifesteal": "Part des dégâts convertie en énergie pour le prédateur (survie en mêlée)",
+    "herdDefenseCount": "Nombre d’herbivores requis, proches du prédateur, pour déclencher le mobbing",
+    "herdDefenseDamage": "Dégâts par tick infligés au prédateur par le groupe (échelle avec les stacks)",
+    "herdDefenseRange": "Portée à laquelle les herbivores sont comptés comme défenseurs",
+    "herdDefenseMaxStacks": "Nombre maximum de paliers additionnels au-dessus du seuil (limite la létalité en meute)"
+  },
+  "presets": {
+    "gentleSoup": { "label": "Gentle Soup", "hint": "Équilibre doux, couleurs pastel, émergence lente" },
+    "neonNight": { "label": "Neon Night", "hint": "Peu de créatures, contrastes forts, mouvements élégants" },
+    "predatorChaos": { "label": "Predator–Prey Chaos", "hint": "Dynamique proie/prédateur très active" },
+    "slowGarden": { "label": "Slow Garden", "hint": "Économie d’énergie, reproduction rare, ambiance contemplative" }
+  },
+  "actions": { "feed": "Nourrir", "toxin": "Toxine", "predator": "Prédateur" },
+  "hud": {
+    "fps": "FPS",
+    "herbivores": "Herbivores",
+    "predators": "Prédateurs",
+    "food": "Nourriture",
+    "paused": "PAUSE",
+    "pressSpace": "Appuyez sur ESPACE pour jouer",
+    "hint1": "Molette=zoom • Glisser=déplacer • Clic cellule=infos",
+    "hint2": "Clic vide=menu • Ctrl/Shift/Alt+clic=direct"
+  },
+  "cell": {
+    "cell": "Cellule",
+    "herbivore": "Herbivore",
+    "predator": "Prédateur",
+    "gen": "Gen",
+    "energy": "Énergie",
+    "age": "Âge",
+    "position": "Position",
+    "speed": "Vitesse",
+    "genome": "Génome",
+    "size": "Taille",
+    "maxSpeed": "Vitesse max",
+    "sense": "Portée",
+    "efficiency": "Efficacité",
+    "lineage": "Lignée",
+    "parent": "Parent",
+    "children": "Enfants",
+    "noChildren": "Aucun enfant vivant",
+    "juvenile": "Juvénile",
+    "follow": "Suivre",
+    "following": "Suivi"
+  },
+  "menu": {
+    "feed": "Nourrir (Touche F/Ctrl+clic)",
+    "toxin": "Empoisonner (Touche T/Shift+clic)",
+    "predator": "Prédateur (Touche P/Alt+clic)"
+  },
+  "lang": { "fr": "FR", "en": "EN" }
+}
