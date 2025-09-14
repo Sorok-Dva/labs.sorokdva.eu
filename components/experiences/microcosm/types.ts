@@ -31,6 +31,13 @@ export type Cell = {
   // Social following lifecycle
   isFollowingParent?: boolean
   followUntil?: number // world.t time until which it follows
+  // Infection state (toxin-borne, light SIR-like)
+  infectionState?: "susceptible" | "infected" | "recovered" | "immune"
+  infectedUntil?: number // world.t when infection ends
+  immuneUntil?: number // world.t until which immunity lasts (for recovered)
+  naturallyImmune?: boolean // born immune (baseline immunity)
+  reproBlockedUntil?: number // cannot reproduce until this time (after contamination)
+  lastSpreadAt?: number // last time this cell attempted to spread
 }
 
 export type Food = { id: number; pos: Vec2; value: number }
@@ -66,6 +73,18 @@ export type Settings = {
   socialFollowDuration: number // ticks the juvenile follows the parent
   socialFollowStrength: number // force multiplier toward parent
   socialRebelProb: number // probability the child ignores social model
+  // Infection/toxin parameters
+  toxinInfectProb: number // per-tick probability to get infected when inside toxin radius
+  infectionDuration: number // ticks being infected
+  infectionImmunityDuration: number // ticks of immunity after recovery
+  infectionNaturalImmunityRate: number // chance a new cell is permanently immune
+  infectionExtraDrain: number // extra energy lost per tick when infected
+  infectionReproBlockDuration: number // ticks reproduction is blocked since contamination
+  infectionTransmitRadius: number // px
+  infectionR0: number // target basic reproduction number (lightweight)
+  infectionSpreadCooldown: number // min ticks between two spreads by same carrier
+  toxinProximityDrain: number // extra energy drain per tick when inside toxin radius (scaled by strength)
+  toxinDigestMultiplier: number // multiplier to energy gain from food when inside toxin (0..1)
 }
 
 export type VisSettings = {

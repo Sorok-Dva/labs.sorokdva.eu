@@ -29,6 +29,18 @@ export const DEFAULTS: Settings = {
   socialFollowDuration: 240, // ~4s at 60fps, adjust as needed
   socialFollowStrength: 0.22,
   socialRebelProb: 0.12,
+  // Infection defaults (light touch)
+  toxinInfectProb: 0.03, // 3% per tick inside toxin
+  infectionDuration: 900, // ~15s at 60fps
+  infectionImmunityDuration: 1800, // ~30s immunity after recovery
+  infectionNaturalImmunityRate: 0.08, // 8% born immune
+  infectionExtraDrain: 0.01, // extra energy per tick while infected
+  infectionReproBlockDuration: 600, // 10s block after contamination
+  infectionTransmitRadius: 18,
+  infectionR0: 0.6, // mild spread
+  infectionSpreadCooldown: 20, // one spread attempt per ~0.33s
+  toxinProximityDrain: 0.05, // scales with toxin strength each tick inside radius
+  toxinDigestMultiplier: 0.5, // 50% energy gain from food while inside toxin
 }
 
 export const PRESETS: Record<string, Partial<Settings> & { label: string; hint: string }> = {

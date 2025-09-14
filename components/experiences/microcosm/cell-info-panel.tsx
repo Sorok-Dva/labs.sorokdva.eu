@@ -170,6 +170,35 @@ export function CellInfoPanel({ cell, onClose, onSelectCell, allCells, isTrackin
           </div>
         </div>
 
+        {/* Santé / Infection */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-slate-200">{t ? t('microcosm.cell.health','Santé') : 'Santé'}</h4>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span className="text-slate-400">{t ? t('microcosm.cell.infectionState','Statut infection') : 'Statut infection'}:</span>
+              <span className="ml-1 font-mono">{cell.infectionState ?? (cell.naturallyImmune ? 'immune' : 'susceptible')}</span>
+            </div>
+            {cell.infectedUntil !== undefined && (
+              <div>
+                <span className="text-slate-400">{t ? t('microcosm.cell.infectedUntil','Infecté jusqu’à') : 'Infecté jusqu’à'}:</span>
+                <span className="ml-1 font-mono">{Math.max(0, (cell.infectedUntil || 0) - (currentTime || 0))}</span>
+              </div>
+            )}
+            {cell.immuneUntil !== undefined && (
+              <div>
+                <span className="text-slate-400">{t ? t('microcosm.cell.immuneUntil','Immunisé jusqu’à') : 'Immunisé jusqu’à'}:</span>
+                <span className="ml-1 font-mono">{Math.max(0, (cell.immuneUntil || 0) - (currentTime || 0))}</span>
+              </div>
+            )}
+            {cell.reproBlockedUntil !== undefined && (
+              <div>
+                <span className="text-slate-400">{t ? t('microcosm.cell.reproBlocked','Repro. bloquée (ticks restants)') : 'Repro. bloquée (ticks)'}:</span>
+                <span className="ml-1 font-mono">{Math.max(0, (cell.reproBlockedUntil || 0) - (currentTime || 0))}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Stats de reproduction */}
         <div className="pt-2 border-t border-slate-700">
           <div className="grid grid-cols-2 gap-2 text-xs">

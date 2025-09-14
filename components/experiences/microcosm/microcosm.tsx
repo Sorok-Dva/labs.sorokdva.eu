@@ -501,6 +501,9 @@ export default function Microcosm() {
         return { x: Math.cos(a), y: Math.sin(a) }
       })(),
       roamTimer: Math.floor(rand(60, 180)),
+      // Infection initial state
+      naturallyImmune: Math.random() < settings.infectionNaturalImmunityRate,
+      infectionState: undefined,
     }
   }
 
@@ -643,6 +646,22 @@ export default function Microcosm() {
       c.energy -= cfg.metabolism * (c.kind === "predator" ? 1.4 : 1) * dt
       if (c.cd && c.cd > 0) c.cd -= 1
 
+      // Initialize infection state if not set
+      if (!c.infectionState) c.infectionState = c.naturallyImmune ? "immune" : "susceptible"
+      // Infection lifecycle
+      if (c.infectionState === "infected" && c.infectedUntil && world.t >= c.infectedUntil) {
+        c.infectionState = "recovered"
+        c.infectedUntil = undefined
+        c.immuneUntil = world.t + cfg.infectionImmunityDuration
+      }
+      if (c.infectionState === "recovered" && c.immuneUntil && world.t >= c.immuneUntil) {
+        // Returns to susceptible unless naturally immune
+        c.infectionState = c.naturallyImmune ? "immune" : "susceptible"
+        c.immuneUntil = undefined
+      }
+      // Extra drain while infected
+      if (c.infectionState === "infected") c.energy -= cfg.infectionExtraDrain
+
       // Hunger model: 0..1 over a horizon
       const hungerHorizon = 720 // frames to reach max hunger
       c.hunger = Math.max(0, Math.min(1, (world.t - c.lastAteAt) / hungerHorizon))
@@ -650,10 +669,11 @@ export default function Microcosm() {
       let acc = { x: 0, y: 0 }
       let hasTarget = false
 
-      // Avoid toxins (query nearby only)
+      // Avoid toxins (query nearby only) and apply infection chance
       {
         const scanR = 72
         const cand = queryToxins(c.pos.x, c.pos.y, scanR)
+        let inToxinZone = false
         for (let it = 0; it < cand.length; it++) {
           const t = cand[it]
           const r = t.radius + c.genome.size * 2
@@ -663,8 +683,21 @@ export default function Microcosm() {
             const dir = norm(sub(c.pos, t.pos))
             acc = add(acc, mul(dir, t.strength * 2.2))
             c.energy -= t.strength * 0.02
+            // Extra proximity drain scaled by toxin strength
+            c.energy -= cfg.toxinProximityDrain * t.strength
+            inToxinZone = true
+            // Contamination event
+            const isSusceptible = c.infectionState === "susceptible"
+            const notImmune = !c.naturallyImmune && c.infectionState !== "immune"
+            if (isSusceptible && notImmune && Math.random() < cfg.toxinInfectProb) {
+              c.infectionState = "infected"
+              c.infectedUntil = world.t + cfg.infectionDuration
+              c.reproBlockedUntil = Math.max(c.reproBlockedUntil || 0, world.t + cfg.infectionReproBlockDuration)
+            }
           }
         }
+        // Persist a flag on cell just for this tick for digestion impact
+        ;(c as any)._inToxinZone = inToxinZone
       }
 
       if (c.kind === "herbivore") {
@@ -700,7 +733,8 @@ export default function Microcosm() {
           // Eat if within reach (slightly larger radius)
           const eatR = c.genome.size + 6
           if (bestD2 < eatR * eatR || dist2(add(c.pos, c.vel), best.pos) < (eatR + 1.5) * (eatR + 1.5)) {
-            c.energy += best.value * c.genome.efficiency
+            const digestMul = (c as any)._inToxinZone ? cfg.toxinDigestMultiplier : 1
+            c.energy += best.value * c.genome.efficiency * digestMul
             const idx = world.food.indexOf(best)
             if (idx >= 0) world.food.splice(idx, 1)
             c.lastAteAt = world.t
@@ -850,7 +884,11 @@ export default function Microcosm() {
 
       // Density-aware reproduction (spatial)
       let crowded = false
-      if (c.energy > cfg.splitThreshold) {
+      const isInfected = c.infectionState === "infected"
+      const reproBlocked = c.reproBlockedUntil !== undefined && world.t < (c.reproBlockedUntil || 0)
+      const energyOk = c.energy > cfg.splitThreshold
+      const mayReproduce = energyOk && !isInfected && !reproBlocked
+      if (mayReproduce) {
         let local = 0
         const r = 40
         const r2 = r * r
@@ -870,7 +908,7 @@ export default function Microcosm() {
         }
       }
 
-      if (c.energy > cfg.splitThreshold && !crowded && world.cells.length + newCells.length < cfg.maxEntitiesCap) {
+      if (mayReproduce && !crowded && world.cells.length + newCells.length < cfg.maxEntitiesCap) {
         c.energy -= cfg.reproductionCost
         const willFollow = settings.socialFollowEnabled && Math.random() > settings.socialRebelProb
         const child: Cell = {
@@ -896,6 +934,9 @@ export default function Microcosm() {
           roamTimer: Math.floor(rand(60, 180)),
           isFollowingParent: willFollow ? true : false,
           followUntil: willFollow ? world.t + settings.socialFollowDuration : undefined,
+          // Infection baseline for child
+          naturallyImmune: Math.random() < settings.infectionNaturalImmunityRate,
+          infectionState: undefined,
         }
         c.children.push(child.id)
         c.totalOffspring++
@@ -919,6 +960,34 @@ export default function Microcosm() {
     }
 
     world.cells = newCells
+
+    // Infection spread (light SIR-like): try after positions updated
+    // We use a small probability tuned by infectionR0 and duration, with a cooldown per carrier
+    const spreadP = Math.min(0.25, cfg.infectionR0 / Math.max(60, cfg.infectionDuration * 0.6))
+    for (let i = 0; i < world.cells.length; i++) {
+      const c = world.cells[i]
+      if (c.infectionState !== "infected") continue
+      if (c.lastSpreadAt && world.t - c.lastSpreadAt < cfg.infectionSpreadCooldown) continue
+      // Find susceptible neighbors
+      const cand = queryCells(c.kind === "herbivore" ? herbGrid : predGrid, c.pos.x, c.pos.y, cfg.infectionTransmitRadius)
+      let infectedCount = 0
+      for (let k = 0; k < cand.length; k++) {
+        if (infectedCount >= 1) break // at most 1 per attempt to keep it mild
+        const o = cand[k]
+        if (o.id === c.id) continue
+        if (o.infectionState && (o.infectionState === "immune" || o.infectionState === "infected")) continue
+        if (o.naturallyImmune) continue
+        if (dist2(c.pos, o.pos) <= cfg.infectionTransmitRadius * cfg.infectionTransmitRadius) {
+          if (Math.random() < spreadP) {
+            o.infectionState = "infected"
+            o.infectedUntil = world.t + cfg.infectionDuration
+            o.reproBlockedUntil = Math.max(o.reproBlockedUntil || 0, world.t + cfg.infectionReproBlockDuration)
+            infectedCount++
+          }
+        }
+      }
+      if (infectedCount > 0) c.lastSpreadAt = world.t
+    }
 
     // Food regeneration
     if (world.food.length < cfg.foodCount) {
@@ -1079,6 +1148,23 @@ export default function Microcosm() {
       hctx.arc(c.pos.x, c.pos.y, c.genome.size, 0, Math.PI * 2)
       hctx.fill()
       hctx.shadowBlur = 0
+
+      // Infection indicators
+      const st = c.infectionState || (c.naturallyImmune ? 'immune' : 'susceptible')
+      if (st === 'infected') {
+        // Orange ring (avoid confusion with predators)
+        hctx.strokeStyle = 'rgba(255,160,60,0.9)'
+        hctx.lineWidth = 2 / camera.zoom
+        hctx.beginPath()
+        hctx.arc(c.pos.x, c.pos.y, c.genome.size + 2, 0, Math.PI * 2)
+        hctx.stroke()
+      } else if (st === 'recovered') {
+        hctx.strokeStyle = 'rgba(80,200,140,0.7)'
+        hctx.lineWidth = 1 / camera.zoom
+        hctx.beginPath()
+        hctx.arc(c.pos.x, c.pos.y, c.genome.size + 1.5, 0, Math.PI * 2)
+        hctx.stroke()
+      }
 
       const dir = norm(c.vel)
       if (!(perf && (camera.zoom < 0.9 || totalCells > 3000))) {

@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { HelpCircle, Play, Pause, RotateCcw, Camera, Eye, EyeOff } from "lucide-react"
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { useState } from "react"
 
 interface ControlPanelProps {
@@ -134,252 +135,364 @@ export function ControlPanel({
           </div>
         </div>
 
-        {/* Presets */}
-        <div className="space-y-3">
-          <Label className="text-sm font-semibold">{t('microcosm.controls.presets','Presets')}</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {Object.entries(PRESETS).map(([key, preset]) => (
-              <Button
-                key={key}
-                variant={presetKey === key ? "default" : "outline"}
-                size="sm"
-                onClick={() => onPresetChange(key)}
-                className="text-xs"
-              >
-                {t(`microcosm.presets.${key}.label`, preset.label)}
-              </Button>
-            ))}
-          </div>
-          <p className="text-xs text-slate-400">{t(`microcosm.presets.${presetKey}.hint`, PRESETS[presetKey]?.hint)}</p>
-        </div>
+        {/* Sections repliables */}
+        <Accordion type="single" collapsible defaultValue="display">
+          <AccordionItem value="presets">
+            <AccordionTrigger>{t('microcosm.controls.presets','Presets')}</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(PRESETS).map(([key, preset]) => (
+                    <Button
+                      key={key}
+                      variant={presetKey === key ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => onPresetChange(key)}
+                      className="text-xs"
+                    >
+                      {t(`microcosm.presets.${key}.label`, preset.label)}
+                    </Button>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-400">{t(`microcosm.presets.${presetKey}.hint`, PRESETS[presetKey]?.hint)}</p>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Paramètres visuels */}
-        <div className="space-y-3">
-          <Label className="text-sm font-semibold">{t('microcosm.controls.display','Affichage')}</Label>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="perf-mode" className="text-sm">{t('microcosm.controls.perfMode','Mode performance')}</Label>
-            <Switch
-              id="perf-mode"
-              checked={!!visSettings.perfMode}
-              onCheckedChange={(checked) => onVisSettingsChange({ perfMode: checked })}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="trails" className="text-sm">{t('microcosm.controls.trails','Traînées')}</Label>
-            <Switch
-              id="trails"
-              checked={visSettings.trailsEnabled}
-              onCheckedChange={(checked) => onVisSettingsChange({ trailsEnabled: checked })}
-            />
-          </div>
-          {visSettings.trailsEnabled && (
-            <div className="flex items-center justify-between">
-              <Label className="text-sm">{t('microcosm.controls.colorMode','Mode couleur')}</Label>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  onVisSettingsChange({
-                    trailColorMode: visSettings.trailColorMode === "byGenome" ? "mono" : "byGenome",
-                  })
-                }
-              >
-                {visSettings.trailColorMode === "byGenome" ? (
-                  <Eye className="w-4 h-4" />
-                ) : (
-                  <EyeOff className="w-4 h-4" />
+          <AccordionItem value="display">
+            <AccordionTrigger>{t('microcosm.controls.display','Affichage')}</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="perf-mode" className="text-sm">{t('microcosm.controls.perfMode','Mode performance')}</Label>
+                  <Switch
+                    id="perf-mode"
+                    checked={!!visSettings.perfMode}
+                    onCheckedChange={(checked) => onVisSettingsChange({ perfMode: checked })}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="trails" className="text-sm">{t('microcosm.controls.trails','Traînées')}</Label>
+                  <Switch
+                    id="trails"
+                    checked={visSettings.trailsEnabled}
+                    onCheckedChange={(checked) => onVisSettingsChange({ trailsEnabled: checked })}
+                  />
+                </div>
+                {visSettings.trailsEnabled && (
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">{t('microcosm.controls.colorMode','Mode couleur')}</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        onVisSettingsChange({
+                          trailColorMode: visSettings.trailColorMode === "byGenome" ? "mono" : "byGenome",
+                        })
+                      }
+                    >
+                      {visSettings.trailColorMode === "byGenome" ? (
+                        <Eye className="w-4 h-4" />
+                      ) : (
+                        <EyeOff className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
                 )}
-              </Button>
-            </div>
-          )}
-        </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Paramètres de simulation */}
-        <div className="space-y-4">
-          <Label className="text-sm font-semibold">{t('microcosm.controls.simulation','Simulation')}</Label>
+          <AccordionItem value="simulation">
+            <AccordionTrigger>{t('microcosm.controls.simulation','Simulation')}</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4">
+                <SliderControl
+                  label={t('microcosm.controls.sliders.mutation','Mutation')}
+                  help={t('microcosm.help.mutationRate', HELP_TEXTS.mutationRate)}
+                  min={0}
+                  max={0.3}
+                  step={0.005}
+                  value={settings.mutationRate}
+                  onChange={(v) => onSettingsChange({ mutationRate: v })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.mutation','Mutation')}
-            help={t('microcosm.help.mutationRate', HELP_TEXTS.mutationRate)}
-            min={0}
-            max={0.3}
-            step={0.005}
-            value={settings.mutationRate}
-            onChange={(v) => onSettingsChange({ mutationRate: v })}
-          />
+                <SliderControl
+                  label={t('microcosm.controls.sliders.metabolism','Métabolisme')}
+                  help={t('microcosm.help.metabolism', HELP_TEXTS.metabolism)}
+                  min={0.005}
+                  max={0.06}
+                  step={0.001}
+                  value={settings.metabolism}
+                  onChange={(v) => onSettingsChange({ metabolism: v })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.metabolism','Métabolisme')}
-            help={t('microcosm.help.metabolism', HELP_TEXTS.metabolism)}
-            min={0.005}
-            max={0.06}
-            step={0.001}
-            value={settings.metabolism}
-            onChange={(v) => onSettingsChange({ metabolism: v })}
-          />
+                <SliderControl
+                  label={t('microcosm.controls.sliders.trailFade','Fondu traînées')}
+                  help={t('microcosm.help.trailFade', HELP_TEXTS.trailFade)}
+                  min={0.005}
+                  max={0.25}
+                  step={0.002}
+                  value={settings.trailFade}
+                  onChange={(v) => onSettingsChange({ trailFade: v })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.trailFade','Fondu traînées')}
-            help={t('microcosm.help.trailFade', HELP_TEXTS.trailFade)}
-            min={0.005}
-            max={0.25}
-            step={0.002}
-            value={settings.trailFade}
-            onChange={(v) => onSettingsChange({ trailFade: v })}
-          />
+                <SliderControl
+                  label={t('microcosm.controls.sliders.foodCount','Nourriture cible')}
+                  help={t('microcosm.help.foodCount', HELP_TEXTS.foodCount)}
+                  min={50}
+                  max={1000}
+                  step={10}
+                  value={settings.foodCount}
+                  onChange={(v) => onSettingsChange({ foodCount: Math.round(v) })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.foodCount','Nourriture cible')}
-            help={t('microcosm.help.foodCount', HELP_TEXTS.foodCount)}
-            min={50}
-            max={1000}
-            step={10}
-            value={settings.foodCount}
-            onChange={(v) => onSettingsChange({ foodCount: Math.round(v) })}
-          />
+                <SliderControl
+                  label={t('microcosm.controls.sliders.splitThreshold','Seuil division')}
+                  help={t('microcosm.help.splitThreshold', HELP_TEXTS.splitThreshold)}
+                  min={12}
+                  max={80}
+                  step={1}
+                  value={settings.splitThreshold}
+                  onChange={(v) => onSettingsChange({ splitThreshold: Math.round(v) })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.splitThreshold','Seuil division')}
-            help={t('microcosm.help.splitThreshold', HELP_TEXTS.splitThreshold)}
-            min={12}
-            max={80}
-            step={1}
-            value={settings.splitThreshold}
-            onChange={(v) => onSettingsChange({ splitThreshold: Math.round(v) })}
-          />
+                <SliderControl
+                  label={t('microcosm.controls.sliders.reproductionCost','Coût reproduction')}
+                  help={t('microcosm.help.reproductionCost', HELP_TEXTS.reproductionCost)}
+                  min={4}
+                  max={40}
+                  step={1}
+                  value={settings.reproductionCost}
+                  onChange={(v) => onSettingsChange({ reproductionCost: Math.round(v) })}
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.reproductionCost','Coût reproduction')}
-            help={t('microcosm.help.reproductionCost', HELP_TEXTS.reproductionCost)}
-            min={4}
-            max={40}
-            step={1}
-            value={settings.reproductionCost}
-            onChange={(v) => onSettingsChange({ reproductionCost: Math.round(v) })}
-          />
-        </div>
+          <AccordionItem value="combat">
+            <AccordionTrigger>{t('microcosm.controls.combat','Combat')}</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4">
+                <SliderControl
+                  label={t('microcosm.controls.sliders.predAttackDamage','Dégâts morsure')}
+                  help={t('microcosm.help.predAttackDamage', HELP_TEXTS.predAttackDamage)}
+                  min={4}
+                  max={40}
+                  step={1}
+                  value={settings.predAttackDamage}
+                  onChange={(v) => onSettingsChange({ predAttackDamage: Math.round(v) })}
+                />
 
-        {/* Paramètres de combat */}
-        <div className="space-y-4 pt-2 border-t border-slate-700/50">
-          <Label className="text-sm font-semibold">{t('microcosm.controls.combat','Combat')}</Label>
+                <SliderControl
+                  label={t('microcosm.controls.sliders.predAttackCooldown','Cooldown morsure')}
+                  help={t('microcosm.help.predAttackCooldown', HELP_TEXTS.predAttackCooldown)}
+                  min={4}
+                  max={40}
+                  step={1}
+                  value={settings.predAttackCooldown}
+                  onChange={(v) => onSettingsChange({ predAttackCooldown: Math.round(v) })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.predAttackDamage','Dégâts morsure')}
-            help={t('microcosm.help.predAttackDamage', HELP_TEXTS.predAttackDamage)}
-            min={4}
-            max={40}
-            step={1}
-            value={settings.predAttackDamage}
-            onChange={(v) => onSettingsChange({ predAttackDamage: Math.round(v) })}
-          />
+                <SliderControl
+                  label={t('microcosm.controls.sliders.predAttackRange','Portée morsure')}
+                  help={t('microcosm.help.predAttackRange', HELP_TEXTS.predAttackRange)}
+                  min={6}
+                  max={30}
+                  step={1}
+                  value={settings.predAttackRange}
+                  onChange={(v) => onSettingsChange({ predAttackRange: Math.round(v) })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.predAttackCooldown','Cooldown morsure')}
-            help={t('microcosm.help.predAttackCooldown', HELP_TEXTS.predAttackCooldown)}
-            min={4}
-            max={40}
-            step={1}
-            value={settings.predAttackCooldown}
-            onChange={(v) => onSettingsChange({ predAttackCooldown: Math.round(v) })}
-          />
+                <SliderControl
+                  label={t('microcosm.controls.sliders.predLifesteal','Vol de vie')}
+                  help={t('microcosm.help.predLifesteal', HELP_TEXTS.predLifesteal)}
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={settings.predLifesteal}
+                  onChange={(v) => onSettingsChange({ predLifesteal: v })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.predAttackRange','Portée morsure')}
-            help={t('microcosm.help.predAttackRange', HELP_TEXTS.predAttackRange)}
-            min={6}
-            max={30}
-            step={1}
-            value={settings.predAttackRange}
-            onChange={(v) => onSettingsChange({ predAttackRange: Math.round(v) })}
-          />
+                <SliderControl
+                  label={t('microcosm.controls.sliders.herdDefenseCount','Seuil troupeau')}
+                  help={t('microcosm.help.herdDefenseCount', HELP_TEXTS.herdDefenseCount)}
+                  min={2}
+                  max={20}
+                  step={1}
+                  value={settings.herdDefenseCount}
+                  onChange={(v) => onSettingsChange({ herdDefenseCount: Math.round(v) })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.predLifesteal','Vol de vie')}
-            help={t('microcosm.help.predLifesteal', HELP_TEXTS.predLifesteal)}
-            min={0}
-            max={1}
-            step={0.05}
-            value={settings.predLifesteal}
-            onChange={(v) => onSettingsChange({ predLifesteal: v })}
-          />
+                <SliderControl
+                  label={t('microcosm.controls.sliders.herdDefenseDamage','Dégâts troupeau')}
+                  help={t('microcosm.help.herdDefenseDamage', HELP_TEXTS.herdDefenseDamage)}
+                  min={0}
+                  max={10}
+                  step={0.5}
+                  value={settings.herdDefenseDamage}
+                  onChange={(v) => onSettingsChange({ herdDefenseDamage: v })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.herdDefenseCount','Seuil troupeau')}
-            help={t('microcosm.help.herdDefenseCount', HELP_TEXTS.herdDefenseCount)}
-            min={2}
-            max={20}
-            step={1}
-            value={settings.herdDefenseCount}
-            onChange={(v) => onSettingsChange({ herdDefenseCount: Math.round(v) })}
-          />
+                <SliderControl
+                  label={t('microcosm.controls.sliders.herdDefenseRange','Portée troupeau')}
+                  help={t('microcosm.help.herdDefenseRange', HELP_TEXTS.herdDefenseRange)}
+                  min={10}
+                  max={80}
+                  step={1}
+                  value={settings.herdDefenseRange}
+                  onChange={(v) => onSettingsChange({ herdDefenseRange: Math.round(v) })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.herdDefenseDamage','Dégâts troupeau')}
-            help={t('microcosm.help.herdDefenseDamage', HELP_TEXTS.herdDefenseDamage)}
-            min={0}
-            max={10}
-            step={0.5}
-            value={settings.herdDefenseDamage}
-            onChange={(v) => onSettingsChange({ herdDefenseDamage: v })}
-          />
+                <SliderControl
+                  label={t('microcosm.controls.sliders.herdDefenseMaxStacks','Max stacks troupeau')}
+                  help={t('microcosm.help.herdDefenseMaxStacks', HELP_TEXTS.herdDefenseMaxStacks)}
+                  min={0}
+                  max={12}
+                  step={1}
+                  value={settings.herdDefenseMaxStacks}
+                  onChange={(v) => onSettingsChange({ herdDefenseMaxStacks: Math.round(v) })}
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.herdDefenseRange','Portée troupeau')}
-            help={t('microcosm.help.herdDefenseRange', HELP_TEXTS.herdDefenseRange)}
-            min={10}
-            max={80}
-            step={1}
-            value={settings.herdDefenseRange}
-            onChange={(v) => onSettingsChange({ herdDefenseRange: Math.round(v) })}
-          />
+          <AccordionItem value="social">
+            <AccordionTrigger>{t('microcosm.controls.social.title','Social')}</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="social-follow" className="text-sm">{t('microcosm.controls.social.familyFollow','Suivi familial')}</Label>
+                  <Switch id="social-follow" checked={settings.socialFollowEnabled} onCheckedChange={(checked) => onSettingsChange({ socialFollowEnabled: checked })} />
+                </div>
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.herdDefenseMaxStacks','Max stacks troupeau')}
-            help={t('microcosm.help.herdDefenseMaxStacks', HELP_TEXTS.herdDefenseMaxStacks)}
-            min={0}
-            max={12}
-            step={1}
-            value={settings.herdDefenseMaxStacks}
-            onChange={(v) => onSettingsChange({ herdDefenseMaxStacks: Math.round(v) })}
-          />
-        </div>
+                <SliderControl
+                  label={t('microcosm.controls.sliders.socialFollowDuration','Durée suivi')}
+                  min={60}
+                  max={900}
+                  step={10}
+                  value={settings.socialFollowDuration}
+                  onChange={(v) => onSettingsChange({ socialFollowDuration: Math.round(v) })}
+                />
 
-        {/* Paramètres sociaux */}
-        <div className="space-y-4 pt-2 border-t border-slate-700/50">
-          <Label className="text-sm font-semibold">{t('microcosm.controls.social.title','Social')}</Label>
+                <SliderControl
+                  label={t('microcosm.controls.sliders.socialFollowStrength','Force suivi')}
+                  min={0}
+                  max={0.6}
+                  step={0.01}
+                  value={settings.socialFollowStrength}
+                  onChange={(v) => onSettingsChange({ socialFollowStrength: v })}
+                />
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="social-follow" className="text-sm">{t('microcosm.controls.social.familyFollow','Suivi familial')}</Label>
-            <Switch id="social-follow" checked={settings.socialFollowEnabled} onCheckedChange={(checked) => onSettingsChange({ socialFollowEnabled: checked })} />
-          </div>
+                <SliderControl
+                  label={t('microcosm.controls.sliders.socialRebelProb','Prob. rebelle')}
+                  min={0}
+                  max={0.5}
+                  step={0.01}
+                  value={settings.socialRebelProb}
+                  onChange={(v) => onSettingsChange({ socialRebelProb: v })}
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.socialFollowDuration','Durée suivi')}
-            min={60}
-            max={900}
-            step={10}
-            value={settings.socialFollowDuration}
-            onChange={(v) => onSettingsChange({ socialFollowDuration: Math.round(v) })}
-          />
+          <AccordionItem value="infection">
+            <AccordionTrigger>{t('microcosm.controls.infection','Toxines & Infection')}</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4">
+                <SliderControl
+                  label={t('microcosm.controls.sliders.toxinInfectProb','Prob. contamination (toxine)')}
+                  min={0}
+                  max={0.2}
+                  step={0.005}
+                  value={settings.toxinInfectProb}
+                  onChange={(v) => onSettingsChange({ toxinInfectProb: v })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.socialFollowStrength','Force suivi')}
-            min={0}
-            max={0.6}
-            step={0.01}
-            value={settings.socialFollowStrength}
-            onChange={(v) => onSettingsChange({ socialFollowStrength: v })}
-          />
+                <SliderControl
+                  label={t('microcosm.controls.sliders.infectionDuration','Durée infection (ticks)')}
+                  min={120}
+                  max={2400}
+                  step={30}
+                  value={settings.infectionDuration}
+                  onChange={(v) => onSettingsChange({ infectionDuration: Math.round(v) })}
+                />
 
-          <SliderControl
-            label={t('microcosm.controls.sliders.socialRebelProb','Prob. rebelle')}
-            min={0}
-            max={0.5}
-            step={0.01}
-            value={settings.socialRebelProb}
-            onChange={(v) => onSettingsChange({ socialRebelProb: v })}
-          />
-        </div>
+                <SliderControl
+                  label={t('microcosm.controls.sliders.infectionImmunityDuration','Immunité post-infection (ticks)')}
+                  min={0}
+                  max={3600}
+                  step={30}
+                  value={settings.infectionImmunityDuration}
+                  onChange={(v) => onSettingsChange({ infectionImmunityDuration: Math.round(v) })}
+                />
+
+                <SliderControl
+                  label={t('microcosm.controls.sliders.infectionNaturalImmunityRate','Immunité innée (%)')}
+                  min={0}
+                  max={0.5}
+                  step={0.01}
+                  value={settings.infectionNaturalImmunityRate}
+                  onChange={(v) => onSettingsChange({ infectionNaturalImmunityRate: v })}
+                />
+
+                <SliderControl
+                  label={t('microcosm.controls.sliders.infectionExtraDrain','Drain infecté (énergie/tick)')}
+                  min={0}
+                  max={0.06}
+                  step={0.001}
+                  value={settings.infectionExtraDrain}
+                  onChange={(v) => onSettingsChange({ infectionExtraDrain: v })}
+                />
+
+                <SliderControl
+                  label={t('microcosm.controls.sliders.infectionReproBlockDuration','Blocage repro post-contagion (ticks)')}
+                  min={60}
+                  max={2400}
+                  step={30}
+                  value={settings.infectionReproBlockDuration}
+                  onChange={(v) => onSettingsChange({ infectionReproBlockDuration: Math.round(v) })}
+                />
+
+                <SliderControl
+                  label={t('microcosm.controls.sliders.infectionTransmitRadius','Rayon transmission (px)')}
+                  min={6}
+                  max={40}
+                  step={1}
+                  value={settings.infectionTransmitRadius}
+                  onChange={(v) => onSettingsChange({ infectionTransmitRadius: Math.round(v) })}
+                />
+
+                <SliderControl
+                  label={t('microcosm.controls.sliders.infectionR0','R0 cible (approx)')}
+                  min={0}
+                  max={2}
+                  step={0.05}
+                  value={settings.infectionR0}
+                  onChange={(v) => onSettingsChange({ infectionR0: v })}
+                />
+
+                <SliderControl
+                  label={t('microcosm.controls.sliders.toxinProximityDrain','Drain proximité toxine (×force)')}
+                  min={0}
+                  max={0.2}
+                  step={0.005}
+                  value={settings.toxinProximityDrain}
+                  onChange={(v) => onSettingsChange({ toxinProximityDrain: v })}
+                />
+
+                <SliderControl
+                  label={t('microcosm.controls.sliders.toxinDigestMultiplier','Efficacité nutrition en toxine (×)')}
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={settings.toxinDigestMultiplier}
+                  onChange={(v) => onSettingsChange({ toxinDigestMultiplier: v })}
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </CardContent>
     </Card>
   )

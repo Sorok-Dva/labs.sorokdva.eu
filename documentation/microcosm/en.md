@@ -107,6 +107,21 @@ Reproduction (Duplication)
   - Create child near parent with ~40% of parent’s current energy, slight random velocity, and a mutated genome according to `mutationRate`.
   - Social follow may be enabled for the child for `socialFollowDuration` ticks.
 
+Infection & Toxins (SIR‑light)
+- Toxin proximity:
+  - Inside a toxin radius, cells suffer extra energy drain per tick proportional to toxin strength (`toxinProximityDrain * strength`).
+  - Digestion penalty: herbivores gain only a fraction of food energy while inside toxins (`toxinDigestMultiplier`).
+- Contamination:
+  - While inside a toxin, susceptible cells have a per‑tick infection probability (`toxinInfectProb`).
+  - Infection lasts `infectionDuration` ticks; reproduction is blocked for `infectionReproBlockDuration` ticks since contamination.
+  - While infected, cells lose additional energy per tick (`infectionExtraDrain`).
+- Immunity & recovery:
+  - After infection, cells recover and gain temporary immunity (`infectionImmunityDuration`).
+  - Some are naturally immune from birth (`infectionNaturalImmunityRate`).
+- Propagation (mild R0):
+  - Infected cells can infect nearby same‑kind neighbors within `infectionTransmitRadius` using a small probability derived from `infectionR0`.
+  - Cooldown `infectionSpreadCooldown` limits spread attempts (max ~1 neighbor per attempt).
+
 Death
 - If energy ≤ −8, the cell dies and drops 2..5 food pieces around its position.
 
@@ -169,6 +184,11 @@ Performance Mode
   - Cells: no shadow blur; dotted parent‑child line hidden; direction hint line skipped if low zoom or many cells.
 - HUD shows `Perf: ON/OFF`.
 
+Visual indicators
+- Infected: orange ring around the cell.
+- Recovered: subtle green ring.
+- Immune: no special indicator (to avoid clutter and confusion).
+
 ## Interactions & Panels
 
 - Cell Info Panel: shows genome/stats, selection, and follow toggle.
@@ -197,3 +217,7 @@ Performance Mode
   - In performance mode, trail decimation is stable by cell `id`, bodies are not decimated. If you see flicker, verify that only trails are decimated.
 - “FPS low even with Perf ON?”
   - Reduce trails; increase `trailFade`; lower entity caps or food target; zoom in; or reduce toxin count (gradients off in perf mode).
+Infection/Toxins
+- `toxinInfectProb`, `infectionDuration`, `infectionImmunityDuration`, `infectionNaturalImmunityRate`.
+- `infectionExtraDrain`, `infectionReproBlockDuration`, `infectionTransmitRadius`, `infectionR0`, `infectionSpreadCooldown`.
+- `toxinProximityDrain`, `toxinDigestMultiplier`.
