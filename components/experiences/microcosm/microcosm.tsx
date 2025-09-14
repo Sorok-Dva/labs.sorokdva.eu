@@ -21,7 +21,9 @@ export default function Microcosm() {
   const [fps, setFps] = useState(0)
   const [presetKey, setPresetKey] = useState<string>("gentleSoup")
   const [settings, setSettings] = useState<Settings>(() => ({ ...DEFAULTS, ...PRESETS["gentleSoup"] }))
-  const [vis, setVis] = useState<VisSettings>({ trailsEnabled: true, trailColorMode: "byGenome" })
+  const [vis, setVis] = useState<VisSettings>({ trailsEnabled: true, trailColorMode: "byGenome", perfMode: false })
+  const autoPerfActiveRef = useRef(false)
+  const fpsRef = useRef(60)
   const [stats, setStats] = useState({ herbs: 0, preds: 0, food: 0 })
 
   const [selectedCell, setSelectedCell] = useState<Cell | null>(null)
@@ -343,9 +345,31 @@ export default function Microcosm() {
       world.frames++
       if (world.lastFpsSample === 0) world.lastFpsSample = now
       if (now - world.lastFpsSample > 500) {
-        setFps(Math.round((world.frames * 1000) / (now - world.lastFpsSample)))
+        const sampleFps = Math.round((world.frames * 1000) / (now - world.lastFpsSample))
+        fpsRef.current = sampleFps
+        setFps(sampleFps)
         world.frames = 0
         world.lastFpsSample = now
+        // Auto-perf hysteresis (always considered; not a user setting)
+        const cellCount = world.cells.length
+        const zoom = camera.zoom
+        const lowFPSOn = sampleFps < 28
+        const highFPSOff = sampleFps > 34
+        const tooManyOn = cellCount >= 3000
+        const tooFewOff = cellCount < 2000
+        const extremeZoomOut = zoom < 0.5
+
+        // Enable only for low FPS or many entities; zoom alone never enables unless over 3k
+        const shouldEnable = lowFPSOn || tooManyOn
+
+        // Disable when FPS recovered and entity count low; also disable when zoomed out but <3k
+        let shouldDisable = (highFPSOff && tooFewOff)
+        if (extremeZoomOut && cellCount < 3000 && !lowFPSOn && !tooManyOn) {
+          shouldDisable = true
+        }
+
+        if (!autoPerfActiveRef.current && shouldEnable) autoPerfActiveRef.current = true
+        else if (autoPerfActiveRef.current && shouldDisable) autoPerfActiveRef.current = false
       }
 
       raf = requestAnimationFrame(loop)
@@ -370,7 +394,7 @@ export default function Microcosm() {
   }, [selectedCell, stats])
 
   // Fonctions utilitaires
-  const seedWorld = useCallback(() => {
+  const seedWorld = useCallback((override?: Settings) => {
     const w = worldRef.current
     w.cells = []
     w.food = []
@@ -380,16 +404,19 @@ export default function Microcosm() {
 
     const { worldWidth, worldHeight } = w
 
-    for (let i = 0; i < settings.foodCount; i++) {
-      w.food.push(newFood({ x: rand(0, worldWidth), y: rand(0, worldHeight) }))
+    const cfg = override ?? settings
+
+    // Seed food with the value from cfg (avoid closure on settings)
+    for (let i = 0; i < cfg.foodCount; i++) {
+      w.food.push({ id: w.nextId++, pos: { x: rand(0, worldWidth), y: rand(0, worldHeight) }, value: cfg.foodValue })
     }
-    for (let i = 0; i < settings.toxinCount; i++) {
+    for (let i = 0; i < cfg.toxinCount; i++) {
       w.toxins.push(newToxin({ x: rand(0, worldWidth), y: rand(0, worldHeight) }))
     }
-    for (let i = 0; i < settings.initialHerbivores; i++) {
+    for (let i = 0; i < cfg.initialHerbivores; i++) {
       w.cells.push(newCell({ x: rand(0, worldWidth), y: rand(0, worldHeight) }, "herbivore"))
     }
-    for (let i = 0; i < settings.initialPredators; i++) {
+    for (let i = 0; i < cfg.initialPredators; i++) {
       w.cells.push(newCell({ x: rand(0, worldWidth), y: rand(0, worldHeight) }, "predator"))
     }
 
@@ -400,11 +427,11 @@ export default function Microcosm() {
     camera.targetZoom = 1
   }, [settings])
 
-  const resetWorld = useCallback(() => {
+  const resetWorld = useCallback((override?: Settings) => {
     setSelectedCell(null)
     setTrackingInfo(null)
     setIsTracking(false)
-    seedWorld()
+    seedWorld(override)
   }, [seedWorld])
 
   const toggleRun = useCallback(() => setRunning((r) => !r), [])
@@ -527,6 +554,86 @@ export default function Microcosm() {
         f.pos.y = f.pos.y + rand(-1, 1)
       }
     }
+    // Build spatial indices (per-frame) to accelerate neighborhood queries
+    const GRID_SIZE = 64
+    const cellKey = (x: number, y: number) => `${Math.floor(x / GRID_SIZE)}|${Math.floor(y / GRID_SIZE)}`
+    const herbGrid = new Map<string, Cell[]>()
+    const predGrid = new Map<string, Cell[]>()
+    const foodGrid = new Map<string, Food[]>()
+    const toxGrid = new Map<string, Toxin[]>()
+    const idMap = new Map<number, Cell>()
+
+    for (const c of world.cells) {
+      idMap.set(c.id, c)
+      const key = cellKey(c.pos.x, c.pos.y)
+      if (c.kind === "herbivore") {
+        let arr = herbGrid.get(key)
+        if (!arr) herbGrid.set(key, (arr = []))
+        arr.push(c)
+      } else {
+        let arr = predGrid.get(key)
+        if (!arr) predGrid.set(key, (arr = []))
+        arr.push(c)
+      }
+    }
+    for (const f of world.food) {
+      const key = cellKey(f.pos.x, f.pos.y)
+      let arr = foodGrid.get(key)
+      if (!arr) foodGrid.set(key, (arr = []))
+      arr.push(f)
+    }
+    for (const t of world.toxins) {
+      const key = cellKey(t.pos.x, t.pos.y)
+      let arr = toxGrid.get(key)
+      if (!arr) toxGrid.set(key, (arr = []))
+      arr.push(t)
+    }
+
+    const queryCells = (grid: Map<string, Cell[]>, x: number, y: number, r: number) => {
+      const out: Cell[] = []
+      const gx0 = Math.floor((x - r) / GRID_SIZE)
+      const gy0 = Math.floor((y - r) / GRID_SIZE)
+      const gx1 = Math.floor((x + r) / GRID_SIZE)
+      const gy1 = Math.floor((y + r) / GRID_SIZE)
+      for (let i = gx0; i <= gx1; i++) {
+        for (let j = gy0; j <= gy1; j++) {
+          const arr = grid.get(`${i}|${j}`)
+          if (!arr) continue
+          for (let k = 0; k < arr.length; k++) out.push(arr[k])
+        }
+      }
+      return out
+    }
+    const queryFood = (x: number, y: number, r: number) => {
+      const out: Food[] = []
+      const gx0 = Math.floor((x - r) / GRID_SIZE)
+      const gy0 = Math.floor((y - r) / GRID_SIZE)
+      const gx1 = Math.floor((x + r) / GRID_SIZE)
+      const gy1 = Math.floor((y + r) / GRID_SIZE)
+      for (let i = gx0; i <= gx1; i++) {
+        for (let j = gy0; j <= gy1; j++) {
+          const arr = foodGrid.get(`${i}|${j}`)
+          if (!arr) continue
+          for (let k = 0; k < arr.length; k++) out.push(arr[k])
+        }
+      }
+      return out
+    }
+    const queryToxins = (x: number, y: number, r: number) => {
+      const out: Toxin[] = []
+      const gx0 = Math.floor((x - r) / GRID_SIZE)
+      const gy0 = Math.floor((y - r) / GRID_SIZE)
+      const gx1 = Math.floor((x + r) / GRID_SIZE)
+      const gy1 = Math.floor((y + r) / GRID_SIZE)
+      for (let i = gx0; i <= gx1; i++) {
+        for (let j = gy0; j <= gy1; j++) {
+          const arr = toxGrid.get(`${i}|${j}`)
+          if (!arr) continue
+          for (let k = 0; k < arr.length; k++) out.push(arr[k])
+        }
+      }
+      return out
+    }
 
     const newCells: Cell[] = []
 
@@ -543,14 +650,20 @@ export default function Microcosm() {
       let acc = { x: 0, y: 0 }
       let hasTarget = false
 
-      // Avoid toxins
-      for (const t of world.toxins) {
-        const d2t = dist2(c.pos, t.pos)
-        const r = t.radius + c.genome.size * 2
-        if (d2t < r * r) {
-          const dir = norm(sub(c.pos, t.pos))
-          acc = add(acc, mul(dir, t.strength * 2.2))
-          c.energy -= t.strength * 0.02
+      // Avoid toxins (query nearby only)
+      {
+        const scanR = 72
+        const cand = queryToxins(c.pos.x, c.pos.y, scanR)
+        for (let it = 0; it < cand.length; it++) {
+          const t = cand[it]
+          const r = t.radius + c.genome.size * 2
+          const r2 = r * r
+          const d2t = dist2(c.pos, t.pos)
+          if (d2t < r2) {
+            const dir = norm(sub(c.pos, t.pos))
+            acc = add(acc, mul(dir, t.strength * 2.2))
+            c.energy -= t.strength * 0.02
+          }
         }
       }
 
@@ -559,12 +672,16 @@ export default function Microcosm() {
         let best: Food | null = null
         let bestD2 = Number.POSITIVE_INFINITY
         const sense = c.genome.sense * (1 + 1.2 * c.hunger)
-        for (let j = 0; j < world.food.length; j++) {
-          const f = world.food[j]
-          const d2f = dist2(c.pos, f.pos)
-          if (d2f < sense * sense && d2f < bestD2) {
-            best = f
-            bestD2 = d2f
+        {
+          const candidates = queryFood(c.pos.x, c.pos.y, sense)
+          const sense2 = sense * sense
+          for (let jj = 0; jj < candidates.length; jj++) {
+            const f = candidates[jj]
+            const d2f = dist2(c.pos, f.pos)
+            if (d2f < sense2 && d2f < bestD2) {
+              best = f
+              bestD2 = d2f
+            }
           }
         }
         if (best) {
@@ -595,13 +712,17 @@ export default function Microcosm() {
         let best: Cell | null = null
         let bestD2 = Number.POSITIVE_INFINITY
         const sense = c.genome.sense * (1 + 1.0 * c.hunger)
-        for (let k = 0; k < world.cells.length; k++) {
-          const other = world.cells[k]
-          if (other.kind !== "herbivore") continue
-          const d2h = dist2(c.pos, other.pos)
-          if (d2h < sense * sense && d2h < bestD2) {
-            best = other
-            bestD2 = d2h
+        {
+          const candidates = queryCells(herbGrid, c.pos.x, c.pos.y, sense)
+          const sense2 = sense * sense
+          for (let kk = 0; kk < candidates.length; kk++) {
+            const other = candidates[kk]
+            if (other.kind !== "herbivore") continue
+            const d2h = dist2(c.pos, other.pos)
+            if (d2h < sense2 && d2h < bestD2) {
+              best = other
+              bestD2 = d2h
+            }
           }
         }
         if (best) {
@@ -617,9 +738,15 @@ export default function Microcosm() {
           }
           // Herd defense
           let defenders = 0
-          for (const h of world.cells) {
-            if (h.kind !== "herbivore") continue
-            if (dist2(h.pos, c.pos) < cfg.herdDefenseRange * cfg.herdDefenseRange) defenders++
+          {
+            const r = cfg.herdDefenseRange
+            const r2 = r * r
+            const candidates = queryCells(herbGrid, c.pos.x, c.pos.y, r)
+            for (let hh = 0; hh < candidates.length; hh++) {
+              const h = candidates[hh]
+              if (h.kind !== "herbivore") continue
+              if (dist2(h.pos, c.pos) < r2) defenders++
+            }
           }
           if (defenders >= cfg.herdDefenseCount) {
             const stacks = Math.min(cfg.herdDefenseMaxStacks, Math.max(0, defenders - cfg.herdDefenseCount + 1))
@@ -632,7 +759,7 @@ export default function Microcosm() {
 
       // Social following: juveniles follow their parent for a while
       if (settings.socialFollowEnabled && c.isFollowingParent && c.followUntil && world.t <= c.followUntil) {
-        const parent = c.parentId ? world.cells.find((x) => x.id === c.parentId) : undefined
+        const parent = c.parentId ? idMap.get(c.parentId) : undefined
         if (parent) {
           const dirp = norm(sub(parent.pos, c.pos))
           acc = add(acc, mul(dirp, settings.socialFollowStrength))
@@ -653,15 +780,26 @@ export default function Microcosm() {
         let count = 0
         let cx = 0,
           cy = 0
-        for (let k = 0; k < world.cells.length; k++) {
-          if (k === i) continue
-          const o = world.cells[k]
+        const neighHerb = queryCells(herbGrid, c.pos.x, c.pos.y, sepRadius)
+        const neighPred = queryCells(predGrid, c.pos.x, c.pos.y, sepRadius)
+        for (let k = 0; k < neighHerb.length && count < sepLimit; k++) {
+          const o = neighHerb[k]
+          if (o.id === c.id) continue
           const d2v = dist2(c.pos, o.pos)
           if (d2v < sepRadius2) {
             count++
             cx += o.pos.x
             cy += o.pos.y
-            if (count >= sepLimit) break
+          }
+        }
+        for (let k = 0; k < neighPred.length && count < sepLimit; k++) {
+          const o = neighPred[k]
+          if (o.id === c.id) continue
+          const d2v = dist2(c.pos, o.pos)
+          if (d2v < sepRadius2) {
+            count++
+            cx += o.pos.x
+            cy += o.pos.y
           }
         }
         if (count >= sepLimit) {
@@ -710,16 +848,19 @@ export default function Microcosm() {
 
       // Remove map wrapping/bouncing for cells to allow infinite world
 
-      // Density-aware reproduction
+      // Density-aware reproduction (spatial)
       let crowded = false
       if (c.energy > cfg.splitThreshold) {
         let local = 0
-        const r = 40,
-          r2 = r * r
-        for (let k = 0; k < world.cells.length; k++) {
-          if (k === i) continue
-          if (world.cells[k].kind !== c.kind) continue
-          if (dist2(c.pos, world.cells[k].pos) < r2) {
+        const r = 40
+        const r2 = r * r
+        const candidatesA = queryCells(herbGrid, c.pos.x, c.pos.y, r)
+        const candidatesB = queryCells(predGrid, c.pos.x, c.pos.y, r)
+        const scan = c.kind === "herbivore" ? candidatesA : candidatesB
+        for (let k = 0; k < scan.length; k++) {
+          const n = scan[k]
+          if (n.id === c.id || n.kind !== c.kind) continue
+          if (dist2(c.pos, n.pos) < r2) {
             local++
             if (local > 10) {
               crowded = true
@@ -804,9 +945,20 @@ export default function Microcosm() {
     camera: Camera,
   ) => {
     // Only draw trail marks for cells; toxins/food moved to HUD
+    const perf = !!(vis.perfMode || autoPerfActiveRef.current)
 
     // Cells trail marks - only draw visible ones
+    // Heuristic trail decimation in perf mode (stable by id to avoid flicker)
+    const total = world.cells.length
+    let stride = 1
+    if (perf) {
+      if (total > 8000 || camera.zoom < 0.35) stride = 6
+      else if (total > 4000 || camera.zoom < 0.45) stride = 4
+      else if (total > 2000 || camera.zoom < 0.6) stride = 3
+      else if (total > 1000 || camera.zoom < 0.8) stride = 2
+    }
     for (const c of world.cells) {
+      if (stride > 1 && (c.id % stride) !== 0) continue
       if (!isInViewport(camera, c.pos.x, c.pos.y, c.genome.size + 10, width, height)) continue
 
       const hue = c.kind === "herbivore" ? c.genome.hue : (c.genome.hue + 330) % 360
@@ -816,9 +968,15 @@ export default function Microcosm() {
         const color = vis.trailColorMode === "byGenome" ? `hsla(${hue}, 90%, 65%, 1)` : `rgba(200,220,255,1)`
         ctx.globalAlpha = alpha
         ctx.fillStyle = color
-        ctx.beginPath()
-        ctx.arc(c.pos.x, c.pos.y, 0.9, 0, Math.PI * 2)
-        ctx.fill()
+        // Use cheaper primitive when zoomed out or perf mode
+        if (perf && camera.zoom < 0.8) {
+          const s = 1 / Math.max(1, camera.zoom)
+          ctx.fillRect(c.pos.x, c.pos.y, s, s)
+        } else {
+          ctx.beginPath()
+          ctx.arc(c.pos.x, c.pos.y, 0.9, 0, Math.PI * 2)
+          ctx.fill()
+        }
         ctx.globalAlpha = 1
       }
     }
@@ -836,6 +994,7 @@ export default function Microcosm() {
     vis: VisSettings,
   ) => {
     hctx.clearRect(0, 0, width, height)
+    const perf = !!(vis.perfMode || autoPerfActiveRef.current)
 
     // Draw non-trailing elements in world space (e.g., food)
     hctx.save()
@@ -843,27 +1002,40 @@ export default function Microcosm() {
     hctx.scale(camera.zoom, camera.zoom)
     hctx.translate(-camera.x, -camera.y)
 
-    // Toxins (crisp, no trail)
+    // Toxins (simplify in perf mode: avoid gradient)
     for (const t of world.toxins) {
       if (!isInViewport(camera, t.pos.x, t.pos.y, t.radius, width, height)) continue
-      const grd = hctx.createRadialGradient(t.pos.x, t.pos.y, 0, t.pos.x, t.pos.y, t.radius)
-      grd.addColorStop(0, "rgba(255,60,80,0.18)")
-      grd.addColorStop(1, "rgba(255,60,80,0.0)")
-      hctx.fillStyle = grd
-      hctx.beginPath()
-      hctx.arc(t.pos.x, t.pos.y, t.radius, 0, Math.PI * 2)
-      hctx.fill()
+      if (perf) {
+        hctx.fillStyle = "rgba(255,60,80,0.12)"
+        hctx.beginPath()
+        hctx.arc(t.pos.x, t.pos.y, t.radius, 0, Math.PI * 2)
+        hctx.fill()
+      } else {
+        const grd = hctx.createRadialGradient(t.pos.x, t.pos.y, 0, t.pos.x, t.pos.y, t.radius)
+        grd.addColorStop(0, "rgba(255,60,80,0.18)")
+        grd.addColorStop(1, "rgba(255,60,80,0.0)")
+        hctx.fillStyle = grd
+        hctx.beginPath()
+        hctx.arc(t.pos.x, t.pos.y, t.radius, 0, Math.PI * 2)
+        hctx.fill()
+      }
     }
 
     for (const f of world.food) {
       if (!isInViewport(camera, f.pos.x, f.pos.y, 2, width, height)) continue
       hctx.fillStyle = "rgba(140,220,255,0.9)"
-      hctx.beginPath()
-      hctx.arc(f.pos.x, f.pos.y, 2, 0, Math.PI * 2)
-      hctx.fill()
+      if (perf && camera.zoom < 0.9) {
+        const s = Math.max(1, Math.floor(2 / camera.zoom))
+        hctx.fillRect(f.pos.x, f.pos.y, s, s)
+      } else {
+        hctx.beginPath()
+        hctx.arc(f.pos.x, f.pos.y, 2, 0, Math.PI * 2)
+        hctx.fill()
+      }
     }
 
     // Cells (crisp, no trail accumulation)
+    const totalCells = world.cells.length
     for (const c of world.cells) {
       if (!isInViewport(camera, c.pos.x, c.pos.y, c.genome.size + 10, width, height)) continue
 
@@ -872,7 +1044,7 @@ export default function Microcosm() {
       const outline = `hsla(${hue}, 90%, 70%, 0.35)`
 
       // Visual indicator: juvenile following line to parent
-      if (c.isFollowingParent && c.followUntil && world.t <= c.followUntil && c.parentId) {
+      if (!perf && c.isFollowingParent && c.followUntil && world.t <= c.followUntil && c.parentId) {
         const parent = world.cells.find((x) => x.id === c.parentId)
         if (parent) {
           hctx.strokeStyle = `hsla(${hue}, 90%, 65%, 0.35)`
@@ -896,8 +1068,12 @@ export default function Microcosm() {
         hctx.stroke()
       }
 
-      hctx.shadowColor = body
-      hctx.shadowBlur = (isSelected ? 12 : 6) / camera.zoom
+      if (!perf) {
+        hctx.shadowColor = body
+        hctx.shadowBlur = (isSelected ? 12 : 6) / camera.zoom
+      } else {
+        hctx.shadowBlur = 0
+      }
       hctx.fillStyle = body
       hctx.beginPath()
       hctx.arc(c.pos.x, c.pos.y, c.genome.size, 0, Math.PI * 2)
@@ -905,24 +1081,28 @@ export default function Microcosm() {
       hctx.shadowBlur = 0
 
       const dir = norm(c.vel)
-      hctx.strokeStyle = outline
-      hctx.lineWidth = 1 / camera.zoom
-      hctx.beginPath()
-      hctx.moveTo(c.pos.x, c.pos.y)
-      hctx.lineTo(c.pos.x + dir.x * (c.genome.size + 5), c.pos.y + dir.y * (c.genome.size + 5))
-      hctx.stroke()
+      if (!(perf && (camera.zoom < 0.9 || totalCells > 3000))) {
+        hctx.strokeStyle = outline
+        hctx.lineWidth = 1 / camera.zoom
+        hctx.beginPath()
+        hctx.moveTo(c.pos.x, c.pos.y)
+        hctx.lineTo(c.pos.x + dir.x * (c.genome.size + 5), c.pos.y + dir.y * (c.genome.size + 5))
+        hctx.stroke()
+      }
     }
 
     hctx.restore()
 
-    // Gradient overlay
-    const g = hctx.createLinearGradient(0, 0, 0, height)
-    g.addColorStop(0, "rgba(0,0,0,0.35)")
-    g.addColorStop(0.12, "rgba(0,0,0,0)")
-    g.addColorStop(0.88, "rgba(0,0,0,0)")
-    g.addColorStop(1, "rgba(0,0,0,0.35)")
-    hctx.fillStyle = g
-    hctx.fillRect(0, 0, width, height)
+    // Gradient overlay (skip in perf mode)
+    if (!perf) {
+      const g = hctx.createLinearGradient(0, 0, 0, height)
+      g.addColorStop(0, "rgba(0,0,0,0.35)")
+      g.addColorStop(0.12, "rgba(0,0,0,0)")
+      g.addColorStop(0.88, "rgba(0,0,0,0)")
+      g.addColorStop(1, "rgba(0,0,0,0.35)")
+      hctx.fillStyle = g
+      hctx.fillRect(0, 0, width, height)
+    }
 
     // Stats pill
     const pad = 10
@@ -942,6 +1122,7 @@ export default function Microcosm() {
     hctx.fillText(`${t('microcosm.hud.food','Nourriture')}: ${stats.food}`, x + 140 * dpr, y + 40 * dpr)
     hctx.fillText(`Zoom: ${camera.zoom.toFixed(1)}x`, x + 140 * dpr, y + 58 * dpr)
     hctx.fillText(`Pos: ${Math.round(camera.x)}, ${Math.round(camera.y)}`, x + 14 * dpr, y + 76 * dpr)
+    hctx.fillText(`Perf: ${perf ? 'ON' : 'OFF'}`, x + 140 * dpr, y + 76 * dpr)
     const trailsLabel = vis.trailsEnabled ? (vis.trailColorMode === 'byGenome' ? 'colored' : 'mono') : 'off'
     hctx.fillText(`${t('microcosm.controls.trails','Traînées')}: ${trailsLabel}`, x + 14 * dpr, y + 94 * dpr)
     hctx.fillText(t('microcosm.hud.hint1','Molette=zoom • Glisser=déplacer • Clic cellule=infos'), x + 14 * dpr, y + 112 * dpr)
@@ -960,8 +1141,9 @@ export default function Microcosm() {
   const handlePresetChange = (key: string) => {
     const preset = PRESETS[key]
     setPresetKey(key)
-    setSettings((prev) => ({ ...prev, ...preset }))
-    resetWorld()
+    const merged = { ...settings, ...preset }
+    setSettings(merged)
+    resetWorld(merged)
   }
 
   const handleSelectCell = (cellId: number) => {
@@ -1014,10 +1196,6 @@ export default function Microcosm() {
               <div className="text-center">
                 <div className="text-cyan-400 font-mono text-lg">{stats.food}</div>
                 <div className="text-slate-500 text-xs">{t('microcosm.stats.food','Nourriture')}</div>
-              </div>
-              <div className="flex items-center gap-2 ml-4">
-                <button className={`px-2 py-1 rounded ${lang==='fr'?'bg-slate-700 text-white':'bg-slate-800 text-slate-300'}`} onClick={()=>setLang('fr')}>{t('lang.fr','FR')}</button>
-                <button className={`px-2 py-1 rounded ${lang==='en'?'bg-slate-700 text-white':'bg-slate-800 text-slate-300'}`} onClick={()=>setLang('en')}>{t('lang.en','EN')}</button>
               </div>
             </div>
           </div>

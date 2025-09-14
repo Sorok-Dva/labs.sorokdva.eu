@@ -157,6 +157,14 @@ export function ControlPanel({
         <div className="space-y-3">
           <Label className="text-sm font-semibold">{t('microcosm.controls.display','Affichage')}</Label>
           <div className="flex items-center justify-between">
+            <Label htmlFor="perf-mode" className="text-sm">{t('microcosm.controls.perfMode','Mode performance')}</Label>
+            <Switch
+              id="perf-mode"
+              checked={!!visSettings.perfMode}
+              onCheckedChange={(checked) => onVisSettingsChange({ perfMode: checked })}
+            />
+          </div>
+          <div className="flex items-center justify-between">
             <Label htmlFor="trails" className="text-sm">{t('microcosm.controls.trails','Traînées')}</Label>
             <Switch
               id="trails"

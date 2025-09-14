@@ -71,6 +71,7 @@ export type Settings = {
 export type VisSettings = {
   trailsEnabled: boolean
   trailColorMode: "mono" | "byGenome"
+  perfMode?: boolean
 }
 
 export type CellTrackingInfo = {
