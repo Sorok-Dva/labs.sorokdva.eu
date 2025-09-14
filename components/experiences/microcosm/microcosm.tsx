@@ -25,6 +25,7 @@ export default function Microcosm() {
 
   const [selectedCell, setSelectedCell] = useState<Cell | null>(null)
   const [trackingInfo, setTrackingInfo] = useState<CellTrackingInfo | null>(null)
+  const [isTracking, setIsTracking] = useState(false)
 
   const [contextMenu, setContextMenu] = useState<{ position: { x: number; y: number }; worldPos: Vec2 } | null>(null)
 
@@ -250,6 +251,30 @@ export default function Microcosm() {
       }
       if (k === "r") resetWorld()
       if (k === "s") snapshot()
+      if (k === "f") {
+        const camera = cameraRef.current
+        dropFoodCluster(
+          {
+            x: camera.x + rand(-200, 200),
+            y: camera.y + rand(-200, 200),
+          },
+          28,
+        )
+      }
+      if (k === "t") {
+        const camera = cameraRef.current
+        spawnToxin({
+          x: camera.x + rand(-200, 200),
+          y: camera.y + rand(-200, 200),
+        })
+      }
+      if (k === "p") {
+        const camera = cameraRef.current
+        spawnPredator({
+          x: camera.x + rand(-200, 200),
+          y: camera.y + rand(-200, 200),
+        })
+      }
       if (k === "escape") setSelectedCell(null)
     }
     window.addEventListener("keydown", onKey)
@@ -278,6 +303,12 @@ export default function Microcosm() {
       const dt = 1
 
       updateCamera(camera, dt)
+      // Camera follow when tracking is active
+      if (isTracking && selectedCell) {
+        const k = 0.25
+        camera.x += (selectedCell.pos.x - camera.x) * k
+        camera.y += (selectedCell.pos.y - camera.y) * k
+      }
 
       // Background / trails in screen space
       ctx.globalCompositeOperation = "source-over"
@@ -319,7 +350,7 @@ export default function Microcosm() {
     }
     raf = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(raf)
-  }, [running, settings, fps, vis, selectedCell])
+  }, [running, settings, fps, vis, selectedCell, isTracking])
 
   useEffect(() => {
     if (selectedCell) {
@@ -331,6 +362,7 @@ export default function Microcosm() {
         // La cellule est morte
         setSelectedCell(null)
         setTrackingInfo(null)
+        setIsTracking(false)
       }
     }
   }, [selectedCell, stats])
@@ -369,6 +401,7 @@ export default function Microcosm() {
   const resetWorld = useCallback(() => {
     setSelectedCell(null)
     setTrackingInfo(null)
+    setIsTracking(false)
     seedWorld()
   }, [seedWorld])
 
@@ -506,6 +539,7 @@ export default function Microcosm() {
       c.hunger = Math.max(0, Math.min(1, (world.t - c.lastAteAt) / hungerHorizon))
 
       let acc = { x: 0, y: 0 }
+      let hasTarget = false
 
       // Avoid toxins
       for (const t of world.toxins) {
@@ -519,7 +553,7 @@ export default function Microcosm() {
       }
 
       if (c.kind === "herbivore") {
-        // Seek food
+        // Seek food (strong steering, suppress roam when targeting)
         let best: Food | null = null
         let bestD2 = Number.POSITIVE_INFINITY
         const sense = c.genome.sense * (1 + 1.2 * c.hunger)
@@ -532,9 +566,21 @@ export default function Microcosm() {
           }
         }
         if (best) {
-          const dir = norm(sub(best.pos, c.pos))
-          acc = add(acc, mul(dir, 0.12))
-          if (bestD2 < (c.genome.size + 4) * (c.genome.size + 4)) {
+          hasTarget = true
+          // Steering towards food: desired velocity - current velocity
+          const toFood = sub(best.pos, c.pos)
+          const dir = norm(toFood)
+          const desired = mul(dir, c.genome.maxSpeed)
+          const steer = sub(desired, c.vel)
+          const hungerBoost = 0.35 * c.hunger
+          let seekGain = 0.28 + hungerBoost
+          // Stronger pull when close to avoid skimming past
+          if (bestD2 < (c.genome.size + 12) * (c.genome.size + 12)) seekGain *= 1.6
+          acc = add(acc, mul(steer, seekGain))
+
+          // Eat if within reach (slightly larger radius)
+          const eatR = c.genome.size + 6
+          if (bestD2 < eatR * eatR || dist2(add(c.pos, c.vel), best.pos) < (eatR + 1.5) * (eatR + 1.5)) {
             c.energy += best.value * c.genome.efficiency
             const idx = world.food.indexOf(best)
             if (idx >= 0) world.food.splice(idx, 1)
@@ -582,6 +628,21 @@ export default function Microcosm() {
         }
       }
 
+      // Social following: juveniles follow their parent for a while
+      if (settings.socialFollowEnabled && c.isFollowingParent && c.followUntil && world.t <= c.followUntil) {
+        const parent = c.parentId ? world.cells.find((x) => x.id === c.parentId) : undefined
+        if (parent) {
+          const dirp = norm(sub(parent.pos, c.pos))
+          acc = add(acc, mul(dirp, settings.socialFollowStrength))
+        } else {
+          c.isFollowingParent = false
+          c.followUntil = undefined
+        }
+      } else if (c.isFollowingParent && c.followUntil && world.t > c.followUntil) {
+        c.isFollowingParent = false
+        c.followUntil = undefined
+      }
+
       // Anti-crowding: repel from local centroid if dense
       {
         const sepRadius = 42
@@ -605,7 +666,11 @@ export default function Microcosm() {
           cx /= count
           cy /= count
           const away = norm(sub(c.pos, { x: cx, y: cy }))
-          acc = add(acc, mul(away, 0.25))
+          // If we are targeting food (seek state), keep repulsion mild
+          const mild = 0.08 + 0.12 * c.hunger
+          const strong = 0.25
+          const repulse = mild // we don't explicitly track target flag; mild repulsion is safer overall
+          acc = add(acc, mul(away, repulse))
           // steer exploration outward
           c.roamDir = norm(add(c.roamDir, mul(away, 0.6)))
         }
@@ -626,8 +691,9 @@ export default function Microcosm() {
           c.roamDir = { x: Math.cos(a), y: Math.sin(a) }
         }
       }
-      // Apply roam force stronger when hungry
-      acc = add(acc, mul(c.roamDir, 0.08 + 0.22 * c.hunger))
+      // Apply roam force stronger when hungry; but reduce if velocity is already pointed well
+      const roamStrength = (0.06 + 0.18 * c.hunger) * (hasTarget ? 0.25 : 1)
+      acc = add(acc, mul(c.roamDir, roamStrength))
 
       // Mild noise
       acc = add(acc, { x: rand(-0.04, 0.04), y: rand(-0.04, 0.04) })
@@ -663,6 +729,7 @@ export default function Microcosm() {
 
       if (c.energy > cfg.splitThreshold && !crowded && world.cells.length + newCells.length < cfg.maxEntitiesCap) {
         c.energy -= cfg.reproductionCost
+        const willFollow = settings.socialFollowEnabled && Math.random() > settings.socialRebelProb
         const child: Cell = {
           id: world.nextId++,
           pos: add(c.pos, { x: rand(-3, 3), y: rand(-3, 3) }),
@@ -684,6 +751,8 @@ export default function Microcosm() {
             return { x: Math.cos(a), y: Math.sin(a) }
           })(),
           roamTimer: Math.floor(rand(60, 180)),
+          isFollowingParent: willFollow ? true : false,
+          followUntil: willFollow ? world.t + settings.socialFollowDuration : undefined,
         }
         c.children.push(child.id)
         c.totalOffspring++
@@ -755,7 +824,7 @@ export default function Microcosm() {
 
   const drawHud = (
     hctx: CanvasRenderingContext2D,
-    world: { cells: Cell[]; food: Food[]; toxins: Toxin[] },
+    world: { cells: Cell[]; food: Food[]; toxins: Toxin[]; t: number },
     width: number,
     height: number,
     running: boolean,
@@ -797,6 +866,21 @@ export default function Microcosm() {
       const hue = c.kind === "herbivore" ? c.genome.hue : (c.genome.hue + 330) % 360
       const body = `hsla(${hue}, 90%, 60%, 0.85)`
       const outline = `hsla(${hue}, 90%, 70%, 0.35)`
+
+      // Visual indicator: juvenile following line to parent
+      if (c.isFollowingParent && c.followUntil && world.t <= c.followUntil && c.parentId) {
+        const parent = world.cells.find((x) => x.id === c.parentId)
+        if (parent) {
+          hctx.strokeStyle = `hsla(${hue}, 90%, 65%, 0.35)`
+          hctx.lineWidth = 1 / camera.zoom
+          hctx.setLineDash([4 / camera.zoom, 4 / camera.zoom])
+          hctx.beginPath()
+          hctx.moveTo(c.pos.x, c.pos.y)
+          hctx.lineTo(parent.pos.x, parent.pos.y)
+          hctx.stroke()
+          hctx.setLineDash([])
+        }
+      }
 
       const isSelected = selectedCell && selectedCell.id === c.id
 
@@ -949,11 +1033,27 @@ export default function Microcosm() {
 
           {/* Cell info panel */}
           {selectedCell && (
-            <CellInfoPanel
+          <CellInfoPanel
               cell={selectedCell}
-              onClose={() => setSelectedCell(null)}
+              onClose={() => {
+                setSelectedCell(null)
+                setIsTracking(false)
+              }}
               onSelectCell={handleSelectCell}
               allCells={worldRef.current.cells}
+              isTracking={isTracking}
+              onToggleTracking={() => {
+                setIsTracking((v) => {
+                  const next = !v
+                  if (next && selectedCell) {
+                    const camera = cameraRef.current
+                    camera.x = selectedCell.pos.x
+                    camera.y = selectedCell.pos.y
+                  }
+                  return next
+                })
+              }}
+              currentTime={worldRef.current.t}
             />
           )}
 

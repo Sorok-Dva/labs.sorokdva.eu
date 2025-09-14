@@ -92,16 +92,16 @@ export function ControlPanel({
 }: ControlPanelProps) {
   return (
     <Card className="w-full max-w-sm bg-slate-900/95 border-slate-700 backdrop-blur-sm">
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-1">
         <CardTitle className="text-lg">Contrôles Microcosm</CardTitle>
-        <div className="flex gap-2 text-sm">
+        <div className="text-sm">
           <Badge variant="secondary">🌱 {stats.herbs} herbivores</Badge>
           <Badge variant="destructive">🦁 {stats.preds} prédateurs</Badge>
           <Badge variant="outline">🍃 {stats.food} nourriture</Badge>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-3">
         {/* Contrôles principaux */}
         <div className="flex gap-2">
           <Button onClick={onToggleRun} className="flex-1">
@@ -114,6 +114,22 @@ export function ControlPanel({
           <Button variant="outline" onClick={onSnapshot}>
             <Camera className="w-4 h-4" />
           </Button>
+        </div>
+        
+        {/* Actions rapides */}
+        <div className="space-y-3">
+          <Label className="text-sm font-semibold">Actions</Label>
+          <div className="grid grid-cols-3 gap-2">
+            <Button variant="outline" size="sm" onClick={onSpawnFood} className="text-xs bg-transparent">
+              🍃 Nourrir
+            </Button>
+            <Button variant="outline" size="sm" onClick={onSpawnToxin} className="text-xs bg-transparent">
+              ☠️ Toxine
+            </Button>
+            <Button variant="outline" size="sm" onClick={onSpawnPredator} className="text-xs bg-transparent">
+              🦁 Prédateur
+            </Button>
+          </div>
         </div>
 
         {/* Presets */}
@@ -320,20 +336,43 @@ export function ControlPanel({
           />
         </div>
 
-        {/* Actions rapides */}
-        <div className="space-y-3">
-          <Label className="text-sm font-semibold">Actions</Label>
-          <div className="grid grid-cols-3 gap-2">
-            <Button variant="outline" size="sm" onClick={onSpawnFood} className="text-xs bg-transparent">
-              🍃 Nourrir
-            </Button>
-            <Button variant="outline" size="sm" onClick={onSpawnToxin} className="text-xs bg-transparent">
-              ☠️ Toxine
-            </Button>
-            <Button variant="outline" size="sm" onClick={onSpawnPredator} className="text-xs bg-transparent">
-              🦁 Prédateur
-            </Button>
+        {/* Paramètres sociaux */}
+        <div className="space-y-4 pt-2 border-t border-slate-700/50">
+          <Label className="text-sm font-semibold">Social</Label>
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="social-follow" className="text-sm">
+              Suivi familial
+            </Label>
+            <Switch id="social-follow" checked={settings.socialFollowEnabled} onCheckedChange={(checked) => onSettingsChange({ socialFollowEnabled: checked })} />
           </div>
+
+          <SliderControl
+            label="Durée suivi"
+            min={60}
+            max={900}
+            step={10}
+            value={settings.socialFollowDuration}
+            onChange={(v) => onSettingsChange({ socialFollowDuration: Math.round(v) })}
+          />
+
+          <SliderControl
+            label="Force suivi"
+            min={0}
+            max={0.6}
+            step={0.01}
+            value={settings.socialFollowStrength}
+            onChange={(v) => onSettingsChange({ socialFollowStrength: v })}
+          />
+
+          <SliderControl
+            label="Prob. rebelle"
+            min={0}
+            max={0.5}
+            step={0.01}
+            value={settings.socialRebelProb}
+            onChange={(v) => onSettingsChange({ socialRebelProb: v })}
+          />
         </div>
       </CardContent>
     </Card>

@@ -28,6 +28,9 @@ export type Cell = {
   hunger: number // 0..1 computed from time since lastAteAt
   roamDir: Vec2 // persistent exploration direction
   roamTimer: number // frames until choosing a new roamDir
+  // Social following lifecycle
+  isFollowingParent?: boolean
+  followUntil?: number // world.t time until which it follows
 }
 
 export type Food = { id: number; pos: Vec2; value: number }
@@ -58,6 +61,11 @@ export type Settings = {
   herdDefenseCount: number
   herdDefenseDamage: number
   herdDefenseMaxStacks: number
+  // Social following settings
+  socialFollowEnabled: boolean
+  socialFollowDuration: number // ticks the juvenile follows the parent
+  socialFollowStrength: number // force multiplier toward parent
+  socialRebelProb: number // probability the child ignores social model
 }
 
 export type VisSettings = {

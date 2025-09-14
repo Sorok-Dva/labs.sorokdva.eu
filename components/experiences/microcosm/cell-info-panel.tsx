@@ -4,16 +4,19 @@ import type { Cell } from "./types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { X, Users, Zap, Eye, Gauge, Target } from "lucide-react"
+import { X, Users, Zap, Eye, EyeOff, Gauge, Target } from "lucide-react"
 
 interface CellInfoPanelProps {
   cell: Cell | null
   onClose: () => void
   onSelectCell: (cellId: number) => void
   allCells: Cell[]
+  isTracking?: boolean
+  onToggleTracking?: () => void
+  currentTime?: number
 }
 
-export function CellInfoPanel({ cell, onClose, onSelectCell, allCells }: CellInfoPanelProps) {
+export function CellInfoPanel({ cell, onClose, onSelectCell, allCells, isTracking = false, onToggleTracking, currentTime = 0 }: CellInfoPanelProps) {
   if (!cell) return null
 
   const formatValue = (value: number, decimals = 2) => {
@@ -42,15 +45,26 @@ export function CellInfoPanel({ cell, onClose, onSelectCell, allCells }: CellInf
             />
             Cellule #{cell.id}
           </CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            {onToggleTracking && (
+              <Button variant={isTracking ? "default" : "outline"} size="sm" onClick={onToggleTracking}>
+                {isTracking ? <Eye className="w-4 h-4 mr-1" /> : <EyeOff className="w-4 h-4 mr-1" />}
+                {isTracking ? "Suivi" : "Suivre"}
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
         <div className="flex gap-2">
           <Badge variant={cell.kind === "herbivore" ? "secondary" : "destructive"}>
             {cell.kind === "herbivore" ? "Herbivore" : "Prédateur"}
           </Badge>
           <Badge variant="outline">Gen {cell.generation}</Badge>
+          {cell.isFollowingParent && cell.followUntil && currentTime <= cell.followUntil && (
+            <Badge variant="secondary">Juvénile</Badge>
+          )}
         </div>
       </CardHeader>
 

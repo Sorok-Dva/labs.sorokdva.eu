@@ -24,6 +24,11 @@ export const DEFAULTS: Settings = {
   herdDefenseCount: 6,
   herdDefenseDamage: 2,
   herdDefenseMaxStacks: 4,
+  // Social defaults
+  socialFollowEnabled: true,
+  socialFollowDuration: 240, // ~4s at 60fps, adjust as needed
+  socialFollowStrength: 0.22,
+  socialRebelProb: 0.12,
 }
 
 export const PRESETS: Record<string, Partial<Settings> & { label: string; hint: string }> = {
@@ -36,6 +41,8 @@ export const PRESETS: Record<string, Partial<Settings> & { label: string; hint: 
     trailFade: 0.12,
     mutationRate: 0.04,
     metabolism: 0.017,
+    socialFollowDuration: 300,
+    socialRebelProb: 0.1,
   },
   neonNight: {
     label: "Neon Night",
@@ -46,6 +53,8 @@ export const PRESETS: Record<string, Partial<Settings> & { label: string; hint: 
     trailFade: 0.14,
     mutationRate: 0.08,
     metabolism: 0.028,
+    socialFollowDuration: 200,
+    socialRebelProb: 0.14,
   },
   predatorChaos: {
     label: "Predator–Prey Chaos",
@@ -56,6 +65,8 @@ export const PRESETS: Record<string, Partial<Settings> & { label: string; hint: 
     trailFade: 0.12,
     mutationRate: 0.1,
     metabolism: 0.03,
+    socialFollowDuration: 180,
+    socialRebelProb: 0.18,
   },
   slowGarden: {
     label: "Slow Garden",
@@ -66,6 +77,8 @@ export const PRESETS: Record<string, Partial<Settings> & { label: string; hint: 
     trailFade: 0.1,
     mutationRate: 0.03,
     metabolism: 0.014,
+    socialFollowDuration: 360,
+    socialRebelProb: 0.08,
   },
 }
 
