@@ -33,10 +33,10 @@ export function CellInfoPanel({ cell, onClose, onSelectCell, allCells, isTrackin
   const { parent, children } = getRelatives()
 
   return (
-    <Card className="absolute top-4 right-4 w-80 bg-slate-900/95 border-slate-700 backdrop-blur-sm z-50">
-      <CardHeader className="pb-3">
+    <Card className="absolute top-4 right-4 z-50 w-80 rounded-[24px] border border-white/10 bg-white/[0.07] backdrop-blur-xl shadow-[0_25px_70px_rgba(99,102,241,0.25)]">
+      <CardHeader className="space-y-3 pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-lg text-white">
             <div
               className="w-4 h-4 rounded-full border-2"
               style={{
@@ -48,28 +48,48 @@ export function CellInfoPanel({ cell, onClose, onSelectCell, allCells, isTrackin
           </CardTitle>
           <div className="flex items-center gap-1">
             {onToggleTracking && (
-              <Button variant={isTracking ? "default" : "outline"} size="sm" onClick={onToggleTracking}>
+              <Button
+                variant={isTracking ? "default" : "outline"}
+                size="sm"
+                onClick={onToggleTracking}
+                className={
+                  isTracking
+                    ? "rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-emerald-400 text-slate-900 shadow-[0_10px_32px_rgba(76,29,149,0.35)]"
+                    : "rounded-full border-white/20 bg-white/10 text-slate-200 hover:bg-white/20"
+                }
+              >
                 {isTracking ? <Eye className="w-4 h-4 mr-1" /> : <EyeOff className="w-4 h-4 mr-1" />}
                 {isTracking ? (t ? t('microcosm.cell.following','Suivi') : 'Suivi') : (t ? t('microcosm.cell.follow','Suivre') : 'Suivre')}
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-full text-slate-200 hover:bg-white/10">
               <X className="w-4 h-4" />
             </Button>
           </div>
         </div>
         <div className="flex gap-2">
-          <Badge variant={cell.kind === "herbivore" ? "secondary" : "destructive"}>
+          <Badge
+            variant={cell.kind === "herbivore" ? "secondary" : "destructive"}
+            className={
+              cell.kind === "herbivore"
+                ? "border-emerald-400/30 bg-emerald-400/15 text-emerald-100"
+                : "border-rose-400/30 bg-rose-500/20 text-rose-100"
+            }
+          >
             {cell.kind === "herbivore" ? (t ? t('microcosm.cell.herbivore','Herbivore') : 'Herbivore') : (t ? t('microcosm.cell.predator','Prédateur') : 'Prédateur')}
           </Badge>
-          <Badge variant="outline">{(t ? t('microcosm.cell.gen','Gen') : 'Gen')} {cell.generation}</Badge>
+          <Badge variant="outline" className="border-white/20 text-slate-200">
+            {(t ? t('microcosm.cell.gen','Gen') : 'Gen')} {cell.generation}
+          </Badge>
           {cell.isFollowingParent && cell.followUntil && currentTime <= cell.followUntil && (
-            <Badge variant="secondary">{t ? t('microcosm.cell.juvenile','Juvénile') : 'Juvénile'}</Badge>
+            <Badge variant="secondary" className="border-purple-400/25 bg-purple-500/15 text-purple-100">
+              {t ? t('microcosm.cell.juvenile','Juvénile') : 'Juvénile'}
+            </Badge>
           )}
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 text-slate-200">
         {/* Stats vitaux */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">

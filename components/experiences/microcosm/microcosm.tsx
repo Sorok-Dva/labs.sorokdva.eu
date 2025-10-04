@@ -8,7 +8,7 @@ import { ControlPanel } from "./control-panel"
 import { CellInfoPanel } from "./cell-info-panel"
 import { ContextMenu } from "./context-menu"
 import { type Camera, createCamera, updateCamera, screenToWorld, isInViewport } from "./camera"
-import { useI18n } from '@/components/i18n/I18nProvider'
+import { useI18n } from "@/components/i18n/I18nProvider"
 
 export default function Microcosm() {
   // Refs
@@ -31,7 +31,7 @@ export default function Microcosm() {
   const [isTracking, setIsTracking] = useState(false)
 
   const [contextMenu, setContextMenu] = useState<{ position: { x: number; y: number }; worldPos: Vec2 } | null>(null)
-  const { t, lang, setLang } = useI18n()
+  const { t, lang } = useI18n()
 
   const cameraRef = useRef<Camera>(createCamera())
   const [isDragging, setIsDragging] = useState(false)
@@ -1261,119 +1261,212 @@ export default function Microcosm() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      {/* Header */}
-      <div className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">{t('microcosm.header.title','Microcosm — Vie artificielle')}</h1>
-              <p className="text-slate-200 text-sm mt-1">{t('microcosm.header.subtitle','Un écosystème émergent proie–prédateur, où chaque créature possède un petit génome. Explorez avec la molette et Ctrl+glisser.')}</p>
-            </div>
-            <div className="hidden md:flex gap-4 text-sm items-center">
-              <div className="text-center">
-                <div className="text-emerald-400 font-mono text-lg">{stats.herbs}</div>
-                <div className="text-slate-500 text-xs">{t('microcosm.stats.herbivores','Herbivores')}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-red-400 font-mono text-lg">{stats.preds}</div>
-                <div className="text-slate-500 text-xs">{t('microcosm.stats.predators','Prédateurs')}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-cyan-400 font-mono text-lg">{stats.food}</div>
-                <div className="text-slate-500 text-xs">{t('microcosm.stats.food','Nourriture')}</div>
+    <div className="relative h-screen overflow-hidden bg-[#030712] text-slate-100">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(76,29,149,0.32),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(16,185,129,0.22),transparent_62%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(2,6,23,0.95),rgba(15,23,42,0.88),rgba(2,6,23,0.97))]" />
+      </div>
+
+      <main className="relative z-10 flex h-full flex-col overflow-hidden">
+        <header className="pt-2 pb-2">
+          <div className="w-full px-3 sm:px-6">
+            <div className="relative overflow-hidden rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 shadow-[0_24px_60px_rgba(99,102,241,0.18)] backdrop-blur-xl">
+              <div className="pointer-events-none absolute -top-32 right-8 h-56 w-56 rounded-full bg-purple-500/30 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-44 left-10 h-64 w-64 rounded-full bg-emerald-400/25 blur-3xl" />
+              <div className="relative flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="max-w-2xl space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.36em] text-purple-100">
+                        {t("microcosm.header.badge", "Simulation vivante")}
+                      </span>
+                      <a
+                        href="/"
+                        className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-100 hover:border-white/30 hover:bg-white/15"
+                      >
+                        {t('microcosm.header.back', 'Retour aux labs')}
+                      </a>
+                    </div>
+                    <div className="grid w-full max-w-[360px] grid-cols-1 gap-2 sm:grid-cols-2">
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-1.5 text-left text-xs text-slate-300/85">
+                        <p className="uppercase tracking-[0.24em] text-purple-200/80">
+                          {t("microcosm.header.hook.one", "Gestes clés")}
+                        </p>
+                        <p className="mt-1 font-medium text-slate-100 text-[11px]">
+                          {t("microcosm.header.hook.oneValue", "Molette = zoom | Glisser = orbiter")}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-1.5 text-left text-xs text-slate-300/85">
+                        <p className="uppercase tracking-[0.24em] text-emerald-200/80">
+                          {t("microcosm.header.hook.two", "Interventions")}
+                        </p>
+                        <p className="mt-1 font-medium text-slate-100 text-[11px]">
+                          {t("microcosm.header.hook.twoValue", "Ctrl = nourrir | Shift = toxine | Alt = prédateur")}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-slate-300/85">
+                    <p className="uppercase tracking-[0.24em] text-purple-200/80">{t("microcosm.header.hook.one", "Gestes clés")}</p>
+                    <p className="font-medium text-slate-100">{t("microcosm.header.hook.oneValue", "Molette = zoom | Glisser = orbiter")}</p>
+                    <p className="uppercase tracking-[0.24em] text-emerald-200/80 pt-2">{t("microcosm.header.hook.two", "Interventions")}</p>
+                    <p className="font-medium text-slate-100">{t("microcosm.header.hook.twoValue", "Ctrl = nourrir | Shift = toxine | Alt = prédateur")}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h1 className="bg-gradient-to-br from-purple-200 via-sky-200 to-emerald-200 bg-clip-text text-2xl font-semibold text-transparent sm:text-3xl">
+                      {t("microcosm.header.title", "Microcosm · Cabinet vivant")}
+                    </h1>
+                    <p className="text-sm leading-relaxed text-slate-200/85">
+                      {t(
+                        "microcosm.header.subtitle",
+                        "Un écosystème proie–prédateur génératif où chaque créature porte un génome minimal. Intervenez pour observer émergence, mutations et équilibres fragiles.",
+                      )}
+                    </p>
+                  </div>
+
+                </div>
+
+                <div className="grid w-full max-w-sm grid-cols-3 gap-2 self-stretch rounded-[20px] bg-white/[0.04] p-3">
+                  {[
+                    {
+                      label: t("microcosm.stats.herbivores", "Herbivores"),
+                      value: stats.herbs,
+                      accent: "from-emerald-400/60 via-emerald-500/40 to-teal-400/40",
+                    },
+                    {
+                      label: t("microcosm.stats.predators", "Prédateurs"),
+                      value: stats.preds,
+                      accent: "from-rose-500/50 via-purple-500/40 to-orange-500/40",
+                    },
+                    {
+                      label: t("microcosm.stats.food", "Nourriture"),
+                      value: stats.food,
+                      accent: "from-cyan-400/60 via-sky-500/40 to-indigo-500/40",
+                    },
+                  ].map((item) => (
+                    <div key={item.label} className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.08] p-3">
+                      <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${item.accent} opacity-30`} />
+                      <div className="relative flex flex-col gap-1">
+                        <span className="text-[9px] uppercase tracking-[0.32em] text-slate-200/70">{item.label}</span>
+                        <span className="text-lg font-semibold text-white font-mono">{item.value}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </header>
 
-      {/* Main content */}
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)]">
-        {/* Canvas */}
-        <div ref={containerRef} className="flex-1 relative overflow-hidden">
-          <canvas ref={canvasRef} className={`block w-full h-full ${isDragging ? "cursor-grabbing" : "cursor-grab"}`} />
-          <canvas ref={hudRef} className="pointer-events-none absolute inset-0" />
+        <section className="flex-1 overflow-hidden pb-4 sm:pb-6">
+          <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-hidden px-3 pb-4 sm:px-6 sm:pb-6 lg:flex-row lg:pb-6 lg:min-h-0">
+            <div
+              ref={containerRef}
+              className="relative flex-1 min-h-[360px] overflow-hidden rounded-[20px] border border-white/10 bg-black/25 shadow-[0_30px_100px_rgba(76,29,149,0.25)] backdrop-blur-xl lg:basis-3/4 lg:h-[calc(100vh-170px)] lg:min-h-0"
+            >
+              <canvas
+                ref={canvasRef}
+                className={`absolute inset-0 h-full w-full ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
+              />
+              <canvas ref={hudRef} className="pointer-events-none absolute inset-0 h-full w-full" />
 
-          {/* Cell info panel */}
-          {selectedCell && (
-          <CellInfoPanel
-              cell={selectedCell}
-              onClose={() => {
-                setSelectedCell(null)
-                setIsTracking(false)
-              }}
-              onSelectCell={handleSelectCell}
-              allCells={worldRef.current.cells}
-              t={t}
-              isTracking={isTracking}
-              onToggleTracking={() => {
-                setIsTracking((v) => {
-                  const next = !v
-                  if (next && selectedCell) {
-                    const camera = cameraRef.current
-                    camera.x = selectedCell.pos.x
-                    camera.y = selectedCell.pos.y
-                  }
-                  return next
-                })
-              }}
-              currentTime={worldRef.current.t}
-            />
-          )}
+              {selectedCell && (
+                <CellInfoPanel
+                  cell={selectedCell}
+                  onClose={() => {
+                    setSelectedCell(null)
+                    setIsTracking(false)
+                  }}
+                  onSelectCell={handleSelectCell}
+                  allCells={worldRef.current.cells}
+                  t={t}
+                  isTracking={isTracking}
+                  onToggleTracking={() => {
+                    setIsTracking((v) => {
+                      const next = !v
+                      if (next && selectedCell) {
+                        const camera = cameraRef.current
+                        camera.x = selectedCell.pos.x
+                        camera.y = selectedCell.pos.y
+                      }
+                      return next
+                    })
+                  }}
+                  currentTime={worldRef.current.t}
+                />
+              )}
 
-          {contextMenu && (
-            <ContextMenu
-              position={contextMenu.position}
-              onAction={handleContextMenuAction}
-              onClose={() => setContextMenu(null)}
-              t={t}
-            />
-          )}
-        </div>
+              {contextMenu && (
+                <ContextMenu
+                  position={contextMenu.position}
+                  onAction={handleContextMenuAction}
+                  onClose={() => setContextMenu(null)}
+                  t={t}
+                />
+              )}
+            </div>
 
-        {/* Control panel */}
-        <div className="lg:w-96 p-4 border-l border-slate-800 bg-slate-900/30 backdrop-blur-sm overflow-y-auto">
-          <ControlPanel
-            settings={settings}
-            visSettings={vis}
-            presetKey={presetKey}
-            running={running}
-            stats={stats}
-            onSettingsChange={handleSettingsChange}
-            onVisSettingsChange={handleVisSettingsChange}
-            onPresetChange={handlePresetChange}
-            onToggleRun={toggleRun}
-            onReset={resetWorld}
-            onSnapshot={snapshot}
-            t={t}
-            onSpawnFood={() => {
-              const camera = cameraRef.current
-              dropFoodCluster(
-                {
-                  x: camera.x + rand(-200, 200),
-                  y: camera.y + rand(-200, 200),
-                },
-                28,
-              )
-            }}
-            onSpawnToxin={() => {
-              const camera = cameraRef.current
-              spawnToxin({
-                x: camera.x + rand(-200, 200),
-                y: camera.y + rand(-200, 200),
-              })
-            }}
-            onSpawnPredator={() => {
-              const camera = cameraRef.current
-              spawnPredator({
-                x: camera.x + rand(-200, 200),
-                y: camera.y + rand(-200, 200),
-              })
-            }}
-          />
-        </div>
-      </div>
+            <aside className="flex flex-col gap-6 lg:basis-1/4 lg:min-w-[18rem] lg:sticky lg:top-4 lg:max-h-[calc(100vh-140px)] lg:overflow-y-auto">
+              <ControlPanel
+                settings={settings}
+                visSettings={vis}
+                presetKey={presetKey}
+                running={running}
+                stats={stats}
+                onSettingsChange={handleSettingsChange}
+                onVisSettingsChange={handleVisSettingsChange}
+                onPresetChange={handlePresetChange}
+                onToggleRun={toggleRun}
+                onReset={resetWorld}
+                onSnapshot={snapshot}
+                t={t}
+                onSpawnFood={() => {
+                  const camera = cameraRef.current
+                  dropFoodCluster(
+                    {
+                      x: camera.x + rand(-200, 200),
+                      y: camera.y + rand(-200, 200),
+                    },
+                    28,
+                  )
+                }}
+                onSpawnToxin={() => {
+                  const camera = cameraRef.current
+                  spawnToxin({
+                    x: camera.x + rand(-200, 200),
+                    y: camera.y + rand(-200, 200),
+                  })
+                }}
+                onSpawnPredator={() => {
+                  const camera = cameraRef.current
+                  spawnPredator({
+                    x: camera.x + rand(-200, 200),
+                    y: camera.y + rand(-200, 200),
+                  })
+                }}
+              />
+
+              <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-6 text-sm leading-relaxed text-slate-200/85 shadow-[0_25px_70px_rgba(45,212,191,0.18)] backdrop-blur-xl">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-300">
+                  {t("microcosm.sidebar.notesTitle", "Notes de terrain")}
+                </h2>
+                <p className="mt-3 text-xs text-slate-300/85">
+                  {t(
+                    "microcosm.sidebar.notesBody",
+                    "Les traînées colorées révèlent l'empreinte des colonies. Activez le mode performance quand le nuage devient trop dense ou que votre machine souffre.",
+                  )}
+                </p>
+                <ul className="mt-4 space-y-2 text-xs text-slate-300/80">
+                  <li>{t("microcosm.sidebar.noteOne", "• Cliquez une cellule pour ouvrir sa fiche génétique.")}</li>
+                  <li>{t("microcosm.sidebar.noteTwo", "• Activez le suivi pour verrouiller la caméra sur un organisme en mutation.")}</li>
+                  <li>{t("microcosm.sidebar.noteThree", "• Les presets modèlent des climats différents : testez-les pour révéler d'autres équilibres.")}</li>
+                </ul>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </main>
     </div>
   )
 }

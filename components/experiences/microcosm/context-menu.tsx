@@ -54,30 +54,30 @@ export function ContextMenu({ position, onAction, onClose, t }: ContextMenuProps
         transform: "translate(-50%, -50%)",
       }}
     >
-      <div className="bg-slate-800/95 backdrop-blur-sm border border-slate-600/50 rounded-lg shadow-2xl p-2">
-        <div className="flex gap-1">
+      <div className="rounded-2xl border border-white/15 bg-white/[0.08] p-3 shadow-[0_20px_60px_rgba(99,102,241,0.25)] backdrop-blur-xl">
+        <div className="flex gap-2">
           <button
             onClick={() => handleAction("food")}
-            className="group flex items-center justify-center w-12 h-12 rounded-lg bg-slate-700/50 hover:bg-cyan-500/20 hover:border-cyan-400/50 border border-transparent transition-all duration-200"
+            className="group flex h-12 w-12 items-center justify-center rounded-xl border border-transparent bg-white/10 transition-all duration-200 hover:border-emerald-400/40 hover:bg-emerald-400/15"
             title={t ? t('microcosm.menu.feed','Nourrir (Ctrl+clic)') : 'Nourrir (Ctrl+clic)'}
           >
-            <Droplets className="w-5 h-5 text-cyan-400 group-hover:text-cyan-300" />
+            <Droplets className="h-5 w-5 text-emerald-300 group-hover:text-emerald-200" />
           </button>
 
           <button
             onClick={() => handleAction("toxin")}
-            className="group flex items-center justify-center w-12 h-12 rounded-lg bg-slate-700/50 hover:bg-red-500/20 hover:border-red-400/50 border border-transparent transition-all duration-200"
+            className="group flex h-12 w-12 items-center justify-center rounded-xl border border-transparent bg-white/10 transition-all duration-200 hover:border-rose-400/40 hover:bg-rose-500/15"
             title={t ? t('microcosm.menu.toxin','Empoisonner (Shift+clic)') : 'Empoisonner (Shift+clic)'}
           >
-            <Skull className="w-5 h-5 text-red-400 group-hover:text-red-300" />
+            <Skull className="h-5 w-5 text-rose-300 group-hover:text-rose-200" />
           </button>
 
           <button
             onClick={() => handleAction("predator")}
-            className="group flex items-center justify-center w-12 h-12 rounded-lg bg-slate-700/50 hover:bg-orange-500/20 hover:border-orange-400/50 border border-transparent transition-all duration-200"
+            className="group flex h-12 w-12 items-center justify-center rounded-xl border border-transparent bg-white/10 transition-all duration-200 hover:border-amber-400/40 hover:bg-amber-500/15"
             title={t ? t('microcosm.menu.predator','Prédateur (Alt+clic)') : 'Prédateur (Alt+clic)'}
           >
-            <Zap className="w-5 h-5 text-orange-400 group-hover:text-orange-300" />
+            <Zap className="h-5 w-5 text-amber-300 group-hover:text-amber-200" />
           </button>
         </div>
       </div>

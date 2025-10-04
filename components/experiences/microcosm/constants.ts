@@ -104,6 +104,8 @@ export const PRESETS: Record<string, Partial<Settings> & { label: string; hint: 
 }
 
 export const HELP_TEXTS = {
+  worldFriction:
+    "Coefficient de friction globale. Plus proche de 1 = mouvement fluide et inertiel, plus bas = déplacements freinés.",
   mutationRate:
     "Probabilité qu’un enfant mute (couleur, taille, vitesse, sens, efficacité). Plus haut = diversité/chaos, plus bas = lignées stables",
   metabolism:
@@ -111,6 +113,8 @@ export const HELP_TEXTS = {
   trailFade: "Opacité du fondu d’arrière-plan. Faible = traînées longues et fluides. Élevé = rendu net (peu de traces)",
   foodCount:
     "Quantité cible de nourriture en circulation. Plus haut = écosystème abondant (explosions de population). Plus bas = pression sélective",
+  foodValue:
+    "Énergie rendue par chaque ressource alimentaire ingérée. Plus haut = populations qui croissent rapidement.",
   splitThreshold:
     "Énergie requise pour se diviser (reproduction). Plus haut = reproduction rare, lignées plus robustes",
   reproductionCost: "Coût énergétique de la division. Plus haut = les parents s’épuisent en se reproduisant",
@@ -122,4 +126,30 @@ export const HELP_TEXTS = {
   herdDefenseDamage: 'Dégâts par tick infligés au prédateur par le groupe (échelle avec les "stacks")',
   herdDefenseRange: 'Portée à laquelle les herbivores sont comptés comme "défenseurs"',
   herdDefenseMaxStacks: "Nombre maximum de paliers additionnels au-dessus du seuil (limite la létalité en meute)",
+  socialFollowDuration:
+    "Durée pendant laquelle un enfant suit son parent après la naissance (en ticks).",
+  socialFollowStrength:
+    "Intensité de la force qui attire un enfant vers son parent. Plus haut = regroupement serré.",
+  socialRebelProb:
+    "Probabilité qu’un enfant ignore le suivi familial et parte explorer seul.",
+  toxinInfectProb:
+    "Probabilité par tick de contracter une infection lorsqu’on reste dans une zone toxique.",
+  infectionDuration:
+    "Durée pendant laquelle un organisme reste infecté avant de guérir automatiquement.",
+  infectionImmunityDuration:
+    "Temps d’immunité accordé après guérison avant de pouvoir se réinfecter.",
+  infectionNaturalImmunityRate:
+    "Part des nouveau-nés naturellement immunisés (0 = aucun, 0.5 = 50 %).",
+  infectionExtraDrain:
+    "Drain d’énergie supplémentaire subi par un organisme infecté chaque tick.",
+  infectionReproBlockDuration:
+    "Durée pendant laquelle la reproduction reste bloquée après une contamination.",
+  infectionTransmitRadius:
+    "Rayon de voisinage utilisé pour propager l’infection aux organismes proches.",
+  infectionR0:
+    "R0 cible approximatif. Plus haut = propagation agressive, plus bas = infection contenue.",
+  toxinProximityDrain:
+    "Drain d’énergie appliqué lorsqu’une créature reste à proximité d’une toxine (pondéré par la force).",
+  toxinDigestMultiplier:
+    "Coefficient appliqué aux calories récupérées en zone toxique (0 = aucune énergie, 1 = pas d’impact).",
 }
