@@ -1282,7 +1282,7 @@ export default function Microcosm() {
                         {t("microcosm.header.badge", "Simulation vivante")}
                       </span>
                       <a
-                        href="/"
+                        href="https://labs.sorokdva.eu"
                         className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-100 hover:border-white/30 hover:bg-white/15"
                       >
                         {t("microcosm.header.back", "Retour aux labs")}
