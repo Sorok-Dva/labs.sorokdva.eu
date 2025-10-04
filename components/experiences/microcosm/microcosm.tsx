@@ -9,6 +9,7 @@ import { CellInfoPanel } from "./cell-info-panel"
 import { ContextMenu } from "./context-menu"
 import { type Camera, createCamera, updateCamera, screenToWorld, isInViewport } from "./camera"
 import { useI18n } from "@/components/i18n/I18nProvider"
+import { BackToHome } from '@/components/experiences/microcosm/back-to-home'
 
 export default function Microcosm() {
   // Refs
@@ -1269,25 +1270,31 @@ export default function Microcosm() {
       </div>
 
       <main className="relative z-10 flex h-full flex-col overflow-hidden">
-        <header className="pt-2 pb-2">
-          <div className="w-full px-3 sm:px-6">
-            <div className="relative overflow-hidden rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 shadow-[0_24px_60px_rgba(99,102,241,0.18)] backdrop-blur-xl">
+        <header>
+          <div className="w-fullsm:px-6">
+            <div className="relative overflow-hidden border border-white/10 bg-white/[0.05] shadow-[0_24px_60px_rgba(99,102,241,0.18)] backdrop-blur-xl">
               <div className="pointer-events-none absolute -top-32 right-8 h-56 w-56 rounded-full bg-purple-500/30 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-44 left-10 h-64 w-64 rounded-full bg-emerald-400/25 blur-3xl" />
-              <div className="relative flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="max-w-2xl space-y-1.5">
+              <div className="flex flex-col gap-3 p-2 h-[15vh] md:flex-row md:items-center md:justify-between">
+                <div className="max-w-4xl space-y-1.5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
+                      <BackToHome />
                       <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-purple-100">
                         {t("microcosm.header.badge", "Simulation vivante")}
                       </span>
-                      <a
-                        href="https://labs.sorokdva.eu"
-                        className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-100 hover:border-white/30 hover:bg-white/15"
-                      >
-                        {t("microcosm.header.back", "Retour aux labs")}
-                      </a>
                     </div>
+                  </div>
+                  <div className="">
+                    <h1 className="bg-gradient-to-br from-purple-200 via-sky-200 to-emerald-200 bg-clip-text text-xl font-semibold text-transparent sm:text-2xl">
+                      {t("microcosm.header.title", "Microcosm · Cabinet vivant")}
+                    </h1>
+                    <p className="text-xs text-slate-200/80 sm:text-sm">
+                      {t(
+                        "microcosm.header.subtitle",
+                        "Un écosystème proie–prédateur génératif où chaque créature porte un génome minimal. Intervenez pour observer émergence, mutations et équilibres fragiles.",
+                      )}
+                    </p>
                     <div className="flex flex-wrap items-center gap-3 text-[10px] font-medium text-slate-200/80">
                       <span className="inline-flex items-center gap-1 text-purple-200/80">
                         {t("microcosm.header.hook.one", "Gestes clés")}:
@@ -1299,21 +1306,9 @@ export default function Microcosm() {
                       </span>
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <h1 className="bg-gradient-to-br from-purple-200 via-sky-200 to-emerald-200 bg-clip-text text-xl font-semibold text-transparent sm:text-2xl">
-                      {t("microcosm.header.title", "Microcosm · Cabinet vivant")}
-                    </h1>
-                    <p className="text-xs leading-relaxed text-slate-200/80 sm:text-sm">
-                      {t(
-                        "microcosm.header.subtitle",
-                        "Un écosystème proie–prédateur génératif où chaque créature porte un génome minimal. Intervenez pour observer émergence, mutations et équilibres fragiles.",
-                      )}
-                    </p>
-                  </div>
-
                 </div>
 
-                <div className="grid w-full max-w-xs grid-cols-3 gap-1.5 self-stretch rounded-[16px] bg-white/[0.04] p-2">
+                <div className="grid w-full max-w-xs grid-cols-3 gap-1.5 rounded-[16px] bg-white/[0.04] max-h-[15px] p-2">
                   {[
                     {
                       label: t("microcosm.stats.herbivores", "Herbivores"),
@@ -1345,11 +1340,11 @@ export default function Microcosm() {
           </div>
         </header>
 
-        <section className="flex-1 overflow-hidden pb-4 sm:pb-6">
-          <div className="flex h-full w-full flex-1 flex-col gap-6 overflow-hidden px-3 pb-4 sm:px-6 sm:pb-6 lg:flex-row lg:pb-6 lg:min-h-0">
+        <section className="flex-1 overflow-hidden">
+          <div className="flex h-full w-full flex-col overflow-hidden lg:flex-row">
             <div
               ref={containerRef}
-              className="relative flex-1 min-h-[360px] overflow-hidden rounded-[20px] border border-white/10 bg-black/25 shadow-[0_30px_100px_rgba(76,29,149,0.25)] backdrop-blur-xl lg:basis-3/4 lg:h-[calc(100vh-170px)] lg:min-h-0"
+              className="relative flex-1 min-h-[360px] overflow-hidden border border-white/10 bg-black/25 shadow-[0_30px_100px_rgba(76,29,149,0.25)] backdrop-blur-xl"
             >
               <canvas
                 ref={canvasRef}

@@ -6,7 +6,7 @@ import Link from "next/link"
 
 export function BackToHome() {
   return (
-    <div className="absolute top-4 left-4 z-50">
+    <div className="top-4 left-4 z-50">
       <Link href="/">
         <Button
           variant="outline"

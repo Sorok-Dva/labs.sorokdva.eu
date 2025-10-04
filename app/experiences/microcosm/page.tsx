@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function MicrocosmPage() {
   return (
     <div className="relative">
-      <BackToHome />
+      {/*<BackToHome />*/}
       <Microcosm />
     </div>
   )
