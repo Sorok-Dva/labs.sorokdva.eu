@@ -1276,48 +1276,34 @@ export default function Microcosm() {
               <div className="pointer-events-none absolute -bottom-44 left-10 h-64 w-64 rounded-full bg-emerald-400/25 blur-3xl" />
               <div className="relative flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="max-w-2xl space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.36em] text-purple-100">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-purple-100">
                         {t("microcosm.header.badge", "Simulation vivante")}
                       </span>
                       <a
                         href="/"
-                        className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-100 hover:border-white/30 hover:bg-white/15"
+                        className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-100 hover:border-white/30 hover:bg-white/15"
                       >
-                        {t('microcosm.header.back', 'Retour aux labs')}
+                        {t("microcosm.header.back", "Retour aux labs")}
                       </a>
                     </div>
-                    <div className="grid w-full max-w-[360px] grid-cols-1 gap-2 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-1.5 text-left text-xs text-slate-300/85">
-                        <p className="uppercase tracking-[0.24em] text-purple-200/80">
-                          {t("microcosm.header.hook.one", "Gestes clés")}
-                        </p>
-                        <p className="mt-1 font-medium text-slate-100 text-[11px]">
-                          {t("microcosm.header.hook.oneValue", "Molette = zoom | Glisser = orbiter")}
-                        </p>
-                      </div>
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-1.5 text-left text-xs text-slate-300/85">
-                        <p className="uppercase tracking-[0.24em] text-emerald-200/80">
-                          {t("microcosm.header.hook.two", "Interventions")}
-                        </p>
-                        <p className="mt-1 font-medium text-slate-100 text-[11px]">
-                          {t("microcosm.header.hook.twoValue", "Ctrl = nourrir | Shift = toxine | Alt = prédateur")}
-                        </p>
-                      </div>
+                    <div className="flex flex-wrap items-center gap-3 text-[10px] font-medium text-slate-200/80">
+                      <span className="inline-flex items-center gap-1 text-purple-200/80">
+                        {t("microcosm.header.hook.one", "Gestes clés")}:
+                        <span className="text-slate-100">{t("microcosm.header.hook.oneValue", "Molette = zoom | Glisser = orbiter")}</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-emerald-200/80">
+                        {t("microcosm.header.hook.two", "Interventions")}:
+                        <span className="text-slate-100">{t("microcosm.header.hook.twoValue", "Ctrl = nourrir | Shift = toxine | Alt = prédateur")}</span>
+                      </span>
                     </div>
                   </div>
-                  <div className="mt-2 text-xs text-slate-300/85">
-                    <p className="uppercase tracking-[0.24em] text-purple-200/80">{t("microcosm.header.hook.one", "Gestes clés")}</p>
-                    <p className="font-medium text-slate-100">{t("microcosm.header.hook.oneValue", "Molette = zoom | Glisser = orbiter")}</p>
-                    <p className="uppercase tracking-[0.24em] text-emerald-200/80 pt-2">{t("microcosm.header.hook.two", "Interventions")}</p>
-                    <p className="font-medium text-slate-100">{t("microcosm.header.hook.twoValue", "Ctrl = nourrir | Shift = toxine | Alt = prédateur")}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <h1 className="bg-gradient-to-br from-purple-200 via-sky-200 to-emerald-200 bg-clip-text text-2xl font-semibold text-transparent sm:text-3xl">
+                  <div className="space-y-1.5">
+                    <h1 className="bg-gradient-to-br from-purple-200 via-sky-200 to-emerald-200 bg-clip-text text-xl font-semibold text-transparent sm:text-2xl">
                       {t("microcosm.header.title", "Microcosm · Cabinet vivant")}
                     </h1>
-                    <p className="text-sm leading-relaxed text-slate-200/85">
+                    <p className="text-xs leading-relaxed text-slate-200/80 sm:text-sm">
                       {t(
                         "microcosm.header.subtitle",
                         "Un écosystème proie–prédateur génératif où chaque créature porte un génome minimal. Intervenez pour observer émergence, mutations et équilibres fragiles.",
@@ -1327,7 +1313,7 @@ export default function Microcosm() {
 
                 </div>
 
-                <div className="grid w-full max-w-sm grid-cols-3 gap-2 self-stretch rounded-[20px] bg-white/[0.04] p-3">
+                <div className="grid w-full max-w-xs grid-cols-3 gap-1.5 self-stretch rounded-[16px] bg-white/[0.04] p-2">
                   {[
                     {
                       label: t("microcosm.stats.herbivores", "Herbivores"),
@@ -1345,11 +1331,11 @@ export default function Microcosm() {
                       accent: "from-cyan-400/60 via-sky-500/40 to-indigo-500/40",
                     },
                   ].map((item) => (
-                    <div key={item.label} className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.08] p-3">
+                    <div key={item.label} className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.08] p-2">
                       <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${item.accent} opacity-30`} />
-                      <div className="relative flex flex-col gap-1">
-                        <span className="text-[9px] uppercase tracking-[0.32em] text-slate-200/70">{item.label}</span>
-                        <span className="text-lg font-semibold text-white font-mono">{item.value}</span>
+                      <div className="relative flex flex-col gap-0.5">
+                        <span className="text-[9px] uppercase tracking-[0.28em] text-slate-200/70">{item.label}</span>
+                        <span className="text-base font-semibold text-white font-mono">{item.value}</span>
                       </div>
                     </div>
                   ))}

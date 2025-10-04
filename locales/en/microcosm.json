@@ -1,7 +1,15 @@
 {
   "header": {
     "title": "Microcosm — Artificial Life",
-    "subtitle": "An emergent predator–prey ecosystem; each creature has a tiny genome. Explore with mouse wheel and Ctrl+drag."
+    "subtitle": "An emergent predator–prey ecosystem; each creature has a tiny genome. Explore with mouse wheel and Ctrl+drag.",
+    "badge": "Living simulation",
+    "back": "Back to labs",
+    "hook": {
+      "one": "Core gestures",
+      "oneValue": "Wheel = zoom | Drag = orbit",
+      "two": "Interactions",
+      "twoValue": "Ctrl = feed | Shift = toxin | Alt = predator"
+    }
   },
   "stats": { "herbivores": "Herbivores", "predators": "Predators", "food": "Food" },
   "controls": {
@@ -36,10 +44,12 @@
     "social": { "title": "Social", "familyFollow": "Family follow" }
   },
   "help": {
+    "worldFriction": "Global friction coefficient. Closer to 1 = fluid, inertial motion; lower = tighter movements",
     "mutationRate": "Probability a child mutates (color, size, speed, sense, efficiency). Higher = diversity/chaos; lower = stable lineages",
     "metabolism": "Energy cost per tick. Higher = hungrier creatures, faster cycles. Lower = contemplative universe",
     "trailFade": "Background fade opacity. Low = long smooth trails. High = crisp rendering (few traces)",
     "foodCount": "Target amount of circulating food. Higher = abundant ecosystem (population booms). Lower = selective pressure",
+    "foodValue": "Energy granted by each food resource. Higher = populations grow faster",
     "splitThreshold": "Energy required to divide (reproduce). Higher = rarer reproduction, sturdier lineages",
     "reproductionCost": "Energy cost of division. Higher = parents exhaust themselves reproducing",
     "predAttackDamage": "Damage dealt by a predator bite. Higher = prey felled faster",
@@ -49,7 +59,20 @@
     "herdDefenseCount": "Herbivores near the predator required to trigger mobbing",
     "herdDefenseDamage": "Damage per tick dealt to the predator by the group (scales with stacks)",
     "herdDefenseRange": "Range at which herbivores are counted as defenders",
-    "herdDefenseMaxStacks": "Maximum additional tiers above threshold (caps herd lethality)"
+    "herdDefenseMaxStacks": "Maximum additional tiers above threshold (caps herd lethality)",
+    "socialFollowDuration": "Duration a child follows its parent after birth (in ticks)",
+    "socialFollowStrength": "Strength of the force pulling a child toward its parent",
+    "socialRebelProb": "Chance a child ignores parental follow",
+    "toxinInfectProb": "Tick-based chance to get infected inside a toxin zone",
+    "infectionDuration": "How long an organism stays infected before recovering",
+    "infectionImmunityDuration": "Immunity period after recovery",
+    "infectionNaturalImmunityRate": "Share of newborns with innate immunity",
+    "infectionExtraDrain": "Additional energy drain suffered while infected",
+    "infectionReproBlockDuration": "Reproduction block duration after contamination",
+    "infectionTransmitRadius": "Neighbourhood radius used to spread infection",
+    "infectionR0": "Approximate target R0. Higher = aggressive spreading",
+    "toxinProximityDrain": "Energy drain applied near a toxin (scaled by strength)",
+    "toxinDigestMultiplier": "Energy retained from food while inside a toxin zone (0 = none, 1 = untouched)"
   },
   "presets": {
     "gentleSoup": { "label": "Gentle Soup", "hint": "Soft balance, pastel colors, slow emergence" },

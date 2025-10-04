@@ -1,7 +1,15 @@
 {
   "header": {
     "title": "Microcosm — Vie artificielle",
-    "subtitle": "Un écosystème émergent proie–prédateur, où chaque créature possède un petit génome. Explorez avec la molette et Ctrl+glisser."
+    "subtitle": "Un écosystème émergent proie–prédateur, où chaque créature possède un petit génome. Explorez avec la molette et Ctrl+glisser.",
+    "badge": "Simulation vivante",
+    "back": "Retour aux labs",
+    "hook": {
+      "one": "Gestes clés",
+      "oneValue": "Molette = zoom | Glisser = orbiter",
+      "two": "Interventions",
+      "twoValue": "Ctrl = nourrir | Shift = toxine | Alt = prédateur"
+    }
   },
   "stats": { "herbivores": "Herbivores", "predators": "Prédateurs", "food": "Nourriture" },
   "controls": {
@@ -36,10 +44,12 @@
     "social": { "title": "Social", "familyFollow": "Suivi familial" }
   },
   "help": {
+    "worldFriction": "Coefficient de friction globale. Plus proche de 1 = mouvement fluide et inertiel, plus bas = déplacements freinés",
     "mutationRate": "Probabilité qu’un enfant mute (couleur, taille, vitesse, sens, efficacité). Plus haut = diversité/chaos, plus bas = lignées stables",
     "metabolism": "Coût énergétique par tick. Plus haut = créatures affamées, cycles rapides. Plus bas = univers contemplatif",
     "trailFade": "Opacité du fondu d’arrière-plan. Faible = traînées longues et fluides. Élevé = rendu net (peu de traces)",
     "foodCount": "Quantité cible de nourriture en circulation. Plus haut = écosystème abondant (explosions de population). Plus bas = pression sélective",
+    "foodValue": "Énergie rendue par chaque ressource alimentaire ingérée. Plus haut = populations qui croissent rapidement",
     "splitThreshold": "Énergie requise pour se diviser (reproduction). Plus haut = reproduction rare, lignées plus robustes",
     "reproductionCost": "Coût énergétique de la division. Plus haut = les parents s’épuisent en se reproduisant",
     "predAttackDamage": "Dégâts infligés par une morsure de prédateur. Plus haut = proies abattues plus vite",
@@ -49,7 +59,20 @@
     "herdDefenseCount": "Nombre d’herbivores requis, proches du prédateur, pour déclencher le mobbing",
     "herdDefenseDamage": "Dégâts par tick infligés au prédateur par le groupe (échelle avec les stacks)",
     "herdDefenseRange": "Portée à laquelle les herbivores sont comptés comme défenseurs",
-    "herdDefenseMaxStacks": "Nombre maximum de paliers additionnels au-dessus du seuil (limite la létalité en meute)"
+    "herdDefenseMaxStacks": "Nombre maximum de paliers additionnels au-dessus du seuil (limite la létalité en meute)",
+    "socialFollowDuration": "Durée pendant laquelle un enfant suit son parent après la naissance (en ticks)",
+    "socialFollowStrength": "Intensité de la force qui attire un enfant vers son parent",
+    "socialRebelProb": "Probabilité qu’un enfant ignore le suivi familial et parte explorer",
+    "toxinInfectProb": "Probabilité par tick de contracter une infection dans une zone toxique",
+    "infectionDuration": "Durée pendant laquelle un organisme reste infecté avant de guérir",
+    "infectionImmunityDuration": "Temps d’immunité accordé après guérison",
+    "infectionNaturalImmunityRate": "Part des nouveau-nés naturellement immunisés",
+    "infectionExtraDrain": "Drain d’énergie supplémentaire subi pendant l’infection",
+    "infectionReproBlockDuration": "Durée du blocage de reproduction après contamination",
+    "infectionTransmitRadius": "Rayon de voisinage pour propager l’infection",
+    "infectionR0": "R0 cible approximatif. Plus haut = propagation agressive",
+    "toxinProximityDrain": "Drain d’énergie appliqué près d’une toxine (pondéré par la force)",
+    "toxinDigestMultiplier": "Énergie récupérée sur la nourriture en zone toxique (0 = aucune, 1 = intacte)"
   },
   "presets": {
     "gentleSoup": { "label": "Gentle Soup", "hint": "Équilibre doux, couleurs pastel, émergence lente" },
