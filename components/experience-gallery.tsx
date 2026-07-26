@@ -382,7 +382,7 @@ export function ExperienceGallery() {
             <Link className="footer-link" href="#catalogue">
               Archive
             </Link>
-            <Link className="footer-link" href="https://sorok-dva.eu">
+            <Link className="footer-link" href="https://sorokdva.eu">
               Portfolio
             </Link>
           </nav>

@@ -377,7 +377,7 @@ export function HeroSection() {
           </Button>
           <Button asChild variant="heroOutline" size="hero">
             <Link
-              href="https://sorok-dva.eu"
+              href="https://sorokdva.eu"
               onMouseMove={moveMagnet}
               onMouseLeave={resetMagnet}
               onBlur={resetMagnet}

@@ -46,7 +46,7 @@ export function SiteHeader() {
           <Link className="site-nav-link" href="#about">
             {copy.about}
           </Link>
-          <Link className="site-nav-link" href="https://sorok-dva.eu">
+          <Link className="site-nav-link" href="https://sorokdva.eu">
             {copy.portfolio}
           </Link>
         </nav>
