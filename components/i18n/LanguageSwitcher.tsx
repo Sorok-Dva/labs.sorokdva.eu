@@ -1,24 +1,33 @@
 "use client"
 
+import { usePathname } from "next/navigation"
+
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useI18n } from "./I18nProvider"
 
 export function LanguageSwitcher() {
   const { lang, setLang } = useI18n()
+  const pathname = usePathname()
+  const isHome = pathname === "/"
+
   return (
-    <div className="fixed top-2 right-2 z-50 flex gap-2 bg-slate-900/70 border border-slate-700 rounded-md p-1">
-      <button
-        onClick={() => setLang("fr")}
-        className={`px-2 py-1 rounded text-xs ${lang === "fr" ? "bg-slate-700 text-white" : "text-slate-300"}`}
-      >
+    <ToggleGroup
+      type="single"
+      value={lang}
+      onValueChange={(value) => {
+        if (value === "fr" || value === "en") setLang(value)
+      }}
+      variant="outline"
+      size="sm"
+      aria-label="Langue"
+      className={isHome ? "language-switcher language-switcher--home" : "language-switcher"}
+    >
+      <ToggleGroupItem value="fr" aria-label="Français">
         FR
-      </button>
-      <button
-        onClick={() => setLang("en")}
-        className={`px-2 py-1 rounded text-xs ${lang === "en" ? "bg-slate-700 text-white" : "text-slate-300"}`}
-      >
+      </ToggleGroupItem>
+      <ToggleGroupItem value="en" aria-label="English">
         EN
-      </button>
-    </div>
+      </ToggleGroupItem>
+    </ToggleGroup>
   )
 }
-

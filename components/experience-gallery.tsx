@@ -1,160 +1,398 @@
 "use client"
 
-import type React from "react"
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import { ArrowUpRight, Circle, LockKeyhole, Microscope } from "lucide-react"
 
-const experiences = [
-  {
-    id: "microcosm",
-    title: "Microcosm",
-    description:
-      "Un écosystème proie–prédateur génératif où chaque créature porte un génome évolutif à observer en temps réel.",
-    category: "Vie Artificielle",
-    status: "Disponible",
-    href: "/experiences/microcosm",
-    tone: "from-emerald-400/70 via-emerald-500/40 to-purple-500/40",
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { useI18n } from "@/components/i18n/I18nProvider"
+
+const content = {
+  fr: {
+    telemetry: [
+      "Expériences interactives",
+      "Dans le navigateur",
+      "Collection en évolution",
+    ],
+    locale: "FR · EN",
+    catalogueLabel: "01 · Le cabinet",
+    catalogueTitle: "Les curiosités numériques",
+    catalogueNote: "Disponibles maintenant ou en construction",
+    available: "Disponible",
+    incubation: "Incubation",
+    experiences: [
+      {
+        id: "microcosm",
+        title: "Microcosm",
+        category: "Vie Artificielle",
+        description:
+          "Un écosystème proie–prédateur génératif où chaque créature porte un génome évolutif à observer en temps réel.",
+        href: "/experiences/microcosm",
+      },
+      {
+        id: "swarm-intel",
+        title: "Swarm Intel",
+        category: "Système Complexe",
+        description:
+          "Dirigez un essaim d’agents autonomes et observez les comportements émergents issus de règles simples.",
+        href: "/experiences/drone-swarm",
+      },
+      {
+        id: "procedural-forest",
+        title: "Forêt Procédurale",
+        category: "Art Génératif",
+        description:
+          "Une canopée algorithmique qui réagit à votre présence et à vos gestes numériques. En cours d’optimisation.",
+      },
+      {
+        id: "visual-illusions",
+        title: "Illusions Visuelles",
+        category: "Perception",
+        description:
+          "Une série d’expériences perceptives qui brouillent les frontières entre l’œil et l’algorithme.",
+      },
+      {
+        id: "living-fractals",
+        title: "Fractales Vivantes",
+        category: "Mathématiques",
+        description:
+          "Des structures mathématiques respirent, mutent et dialoguent avec votre curseur.",
+      },
+    ],
+    aboutLabel: "02 · À propos",
+    aboutTitle: "Un espace pour expérimenter.",
+    aboutDescription:
+      "Des expériences web de toutes sortes, réunies au même endroit. Certaines sont terminées, d’autres encore en construction.",
+    principles: [
+      {
+        title: "À explorer",
+        description: "Chaque expérience se lance directement dans le navigateur.",
+      },
+      {
+        title: "En évolution",
+        description:
+          "Le cabinet grandit au fil des nouvelles idées et des nouveaux prototypes.",
+      },
+    ],
+    processor: "Core_processor",
+    processorState: "Stable",
+    emergence: "Emergence_level",
+    emergenceState: "High",
+    dataLog:
+      "Une collection d’expériences interactives, sans autre prétention que d’être explorée.",
+    footerDescription: "Cabinet des curiosités numériques",
+    transmission: "Transmission_stable",
   },
-  {
-    id: "generative-forest",
-    title: "Forêt Procédurale",
-    description: "Une canopée algorithmique qui réagit à votre présence et à vos gestes numériques.",
-    category: "Art Génératif",
-    status: "À venir",
-    tone: "from-purple-500/40 via-indigo-500/30 to-sky-400/30",
+  en: {
+    telemetry: ["Interactive experiences", "In the browser", "An evolving collection"],
+    locale: "FR · EN",
+    catalogueLabel: "01 · The cabinet",
+    catalogueTitle: "Digital curiosities",
+    catalogueNote: "Available now or currently in construction",
+    available: "Available",
+    incubation: "Incubation",
+    experiences: [
+      {
+        id: "microcosm",
+        title: "Microcosm",
+        category: "Artificial Life",
+        description:
+          "A generative predator–prey ecosystem where every creature carries an evolving genome to observe in real time.",
+        href: "/experiences/microcosm",
+      },
+      {
+        id: "swarm-intel",
+        title: "Swarm Intel",
+        category: "Complex System",
+        description:
+          "Guide a swarm of autonomous agents and observe the behaviours that emerge from simple rules.",
+        href: "/experiences/drone-swarm",
+      },
+      {
+        id: "procedural-forest",
+        title: "Procedural Forest",
+        category: "Generative Art",
+        description:
+          "An algorithmic canopy that reacts to your presence and digital gestures. Currently being optimised.",
+      },
+      {
+        id: "visual-illusions",
+        title: "Visual Illusions",
+        category: "Perception",
+        description:
+          "A series of perceptual experiences that blur the boundary between the eye and the algorithm.",
+      },
+      {
+        id: "living-fractals",
+        title: "Living Fractals",
+        category: "Mathematics",
+        description: "Mathematical structures breathe, mutate and respond to your cursor.",
+      },
+    ],
+    aboutLabel: "02 · About",
+    aboutTitle: "A place to experiment.",
+    aboutDescription:
+      "Web experiences of every kind, gathered in one place. Some are complete, while others are still under construction.",
+    principles: [
+      {
+        title: "Ready to explore",
+        description: "Every experience launches directly in the browser.",
+      },
+      {
+        title: "Always evolving",
+        description: "The cabinet grows with new ideas and new prototypes.",
+      },
+    ],
+    processor: "Core_processor",
+    processorState: "Stable",
+    emergence: "Emergence_level",
+    emergenceState: "High",
+    dataLog:
+      "A collection of interactive experiences, with no ambition beyond being explored.",
+    footerDescription: "Digital cabinet of curiosities",
+    transmission: "Transmission_stable",
   },
-  {
-    id: "visual-illusions",
-    title: "Illusions Visuelles",
-    description: "Une série d'expériences perceptives qui brouillent les frontières entre l'œil et l'algorithme.",
-    category: "Perception",
-    status: "À venir",
-    tone: "from-pink-500/40 via-purple-500/30 to-indigo-500/30",
-  },
-  {
-    id: "swarm-intelligence",
-    title: "Intelligence d'Essaim",
-    description: "Dirigez un essaim d'agents autonomes et observez les comportements émergents",
-    category: "Système Complexe",
-    status: "Disponible",
-    href: "/experiences/drone-swarm",
-    tone: "from-sky-400/60 via-purple-500/40 to-emerald-400/40",
-  },
-  {
-    id: "living-fractals",
-    title: "Fractales Vivantes",
-    description: "Des structures mathématiques respirent, mutent et dialoguent avec votre curseur.",
-    category: "Mathématiques",
-    status: "À venir",
-    tone: "from-indigo-500/40 via-fuchsia-500/30 to-purple-500/30",
-  },
-  {
-    id: "sound-visualization",
-    title: "Visualisation Sonore",
-    description: "Transformez la musique en paysages visuels qui répondent à vos fréquences.",
-    category: "Audio-Visuel",
-    status: "À venir",
-    tone: "from-emerald-400/40 via-sky-400/30 to-purple-500/30",
-  },
-]
+} as const
+
+type Experience = {
+  id: string
+  title: string
+  category: string
+  description: string
+  href?: string
+}
+
+function DossierRow({
+  experience,
+  index,
+  availableLabel,
+  incubationLabel,
+}: {
+  experience: Experience
+  index: number
+  availableLabel: string
+  incubationLabel: string
+}) {
+  const available = "href" in experience && Boolean(experience.href)
+  const rowContents = (
+    <div className="grid gap-6 md:grid-cols-12 md:items-center md:gap-8">
+      <div className="md:col-span-1">
+        <span className="dossier-index font-mono text-sm text-muted-foreground">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+      </div>
+
+      <div className="md:col-span-4">
+        <h3 className="dossier-title font-display text-3xl text-foreground transition-[color,transform] duration-300 md:text-4xl">
+          {experience.title}
+        </h3>
+        <span className="mt-2 block font-mono text-[0.62rem] uppercase tracking-[0.2em] text-ion">
+          {experience.category}
+        </span>
+      </div>
+
+      <div className="md:col-span-5">
+        <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+          {experience.description}
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between gap-5 md:col-span-2 md:justify-end">
+        <Badge
+          variant={available ? "default" : "outline"}
+          className="dossier-status"
+          data-status={available ? "available" : "incubation"}
+        >
+          <Circle fill="currentColor" aria-hidden="true" />
+          {available ? availableLabel : incubationLabel}
+        </Badge>
+        {available ? (
+          <ArrowUpRight
+            className="dossier-action size-5 text-muted-foreground transition-colors"
+            aria-hidden="true"
+          />
+        ) : (
+          <LockKeyhole className="size-4 text-border" aria-hidden="true" />
+        )}
+      </div>
+    </div>
+  )
+
+  if (available && experience.href) {
+    return (
+      <Link
+        href={experience.href}
+        className="dossier-row dossier-row--available group relative block py-10 md:py-12"
+      >
+        {rowContents}
+      </Link>
+    )
+  }
+
+  return (
+    <article className="dossier-row py-10 opacity-55 md:py-12">
+      {rowContents}
+    </article>
+  )
+}
 
 export function ExperienceGallery() {
+  const { lang } = useI18n()
+  const copy = content[lang]
   const year = new Date().getFullYear()
 
   return (
-    <section id="gallery" className="relative py-24">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(129,140,248,0.12),transparent_65%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
-      </div>
+    <>
+      <section className="border-y border-border bg-abyss/75" aria-label="Repères du cabinet">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-8 px-6 py-6 font-mono text-[0.62rem] uppercase tracking-[0.25em] text-muted-foreground md:gap-16">
+          {copy.telemetry.map((item) => (
+            <span key={item}>{item}</span>
+          ))}
+          <span className="hidden lg:inline">{copy.locale}</span>
+        </div>
+      </section>
 
-      <div className="relative mx-auto max-w-6xl px-6">
-        <div className="mb-16 flex flex-col gap-6 rounded-[32px] border border-white/10 bg-white/[0.03] p-10 text-center shadow-xl shadow-purple-500/10 backdrop-blur">
-          <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-purple-400/30 bg-purple-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-purple-100">
-            Collection vivante
-          </span>
-          <h2 className="text-3xl font-semibold text-slate-50 sm:text-4xl md:text-5xl">
-            Expériences interactives en évolution continue
-          </h2>
-          <p className="mx-auto max-w-3xl text-lg leading-relaxed text-slate-200/85">
-            Chaque module capture une palette cosmique et une matière verrée pour explorer des interactions toujours plus
-            audacieuses. Les expériences disponibles sont jouables immédiatement; les autres restent en incubation dans
-            l&apos;atelier.
+      <section id="catalogue" className="relative py-24 md:py-32" aria-labelledby="catalogue-title">
+        <div className="mx-auto w-full max-w-6xl px-6">
+          <div className="mb-16 flex items-end justify-between gap-10 md:mb-24">
+            <div>
+              <p className="mb-4 font-mono text-[0.68rem] uppercase tracking-[0.3em] text-primary">
+                {copy.catalogueLabel}
+              </p>
+              <h2
+                id="catalogue-title"
+                className="font-display text-4xl font-light tracking-tight text-foreground md:text-5xl"
+              >
+                {copy.catalogueTitle}
+              </h2>
+            </div>
+            <p className="hidden max-w-64 text-right font-mono text-[0.62rem] uppercase leading-relaxed tracking-[0.18em] text-muted-foreground md:block">
+              {copy.catalogueNote}
+            </p>
+          </div>
+
+          <div className="border-t border-border">
+            {copy.experiences.map((experience, index) => (
+              <DossierRow
+                key={experience.id}
+                experience={experience}
+                index={index}
+                availableLabel={copy.available}
+                incubationLabel={copy.incubation}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="about"
+        className="relative border-y border-border bg-abyss/75 py-24 md:py-32"
+        aria-labelledby="about-title"
+      >
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-16 px-6 md:grid-cols-2 md:gap-20">
+          <div>
+            <p className="mb-4 font-mono text-[0.68rem] uppercase tracking-[0.3em] text-ion">
+              {copy.aboutLabel}
+            </p>
+            <h2
+              id="about-title"
+              className="mb-8 font-display text-4xl font-light leading-tight tracking-tight text-foreground"
+            >
+              {copy.aboutTitle}
+            </h2>
+            <p className="mb-12 max-w-xl leading-relaxed text-muted-foreground">
+              {copy.aboutDescription}
+            </p>
+
+            <div className="grid gap-8">
+              {copy.principles.map((principle) => (
+                <div key={principle.title} className="flex flex-col gap-3">
+                  <h3 className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-primary">
+                    {principle.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {principle.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <aside className="about-console relative rounded-2xl p-8 md:p-12" aria-label="Journal du cabinet">
+            <Microscope
+              className="absolute right-6 top-6 size-9 text-ion opacity-20"
+              aria-hidden="true"
+            />
+
+            <div className="flex flex-col gap-8 font-mono">
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between text-[0.62rem] uppercase text-muted-foreground">
+                  <span>{copy.processor}</span>
+                  <span>{copy.processorState}</span>
+                </div>
+                <Progress
+                  value={85}
+                  aria-label={`${copy.processor}: 85%`}
+                  className="about-progress about-progress--ion"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between text-[0.62rem] uppercase text-muted-foreground">
+                  <span>{copy.emergence}</span>
+                  <span>{copy.emergenceState}</span>
+                </div>
+                <Progress
+                  value={92}
+                  aria-label={`${copy.emergence}: 92%`}
+                  className="about-progress about-progress--sun"
+                />
+              </div>
+
+              <p className="border-t border-border pt-8 text-[0.68rem] leading-relaxed text-muted-foreground">
+                <span className="text-ion">// DATA_LOG:</span> {copy.dataLog}
+              </p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <footer className="border-t border-border bg-background py-16 md:py-20">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-10 px-6 md:flex-row">
+          <div className="flex flex-col items-center gap-2 md:items-start">
+            <div className="flex items-center gap-3">
+              <span className="font-display text-xl font-semibold text-primary">[42]</span>
+              <span className="font-mono text-xs uppercase tracking-[0.2em] text-foreground">
+                Sorok-Dva
+              </span>
+            </div>
+            <p className="mt-2 text-center font-mono text-[0.68rem] uppercase tracking-[0.15em] text-muted-foreground md:text-left">
+              {copy.footerDescription} © <span suppressHydrationWarning>{year}</span>
+            </p>
+          </div>
+
+          <nav
+            className="flex flex-wrap justify-center gap-8 font-mono text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground md:gap-12"
+            aria-label="Liens externes"
+          >
+            <Link className="footer-link" href="https://p-42.fr/github-sorokdva">
+              GitHub
+            </Link>
+            <Link className="footer-link" href="#catalogue">
+              Archive
+            </Link>
+            <Link className="footer-link" href="https://sorok-dva.eu">
+              Portfolio
+            </Link>
+          </nav>
+
+          <p className="flex items-center gap-2 font-mono text-[0.62rem] uppercase text-ion">
+            <Circle className="size-2 animate-pulse" fill="currentColor" aria-hidden="true" />
+            {copy.transmission}
           </p>
         </div>
-
-        <div className="grid gap-8 md:grid-cols-2">
-          {experiences.map((experience) => {
-            const CardWrapper =
-              experience.status === "Disponible" && experience.href
-                ? ({ children }: { children: React.ReactNode }) => (
-                    <Link
-                      href={experience.href}
-                      className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
-                    >
-                      {children}
-                    </Link>
-                  )
-                : ({ children }: { children: React.ReactNode }) => <div>{children}</div>
-
-            const statusStyles =
-              experience.status === "Disponible"
-                ? "text-emerald-200 bg-emerald-500/15 border border-emerald-400/25"
-                : "text-slate-200 bg-slate-500/10 border border-slate-500/25"
-
-            return (
-              <CardWrapper key={experience.id}>
-                <Card
-                  className={`group relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.04] p-6 shadow-lg shadow-slate-900/40 transition duration-300 hover:border-purple-400/40 hover:shadow-purple-500/20 ${
-                    experience.status === "Disponible" ? "cursor-pointer" : "cursor-default"
-                  }`}
-                >
-                  <div
-                    className={`pointer-events-none absolute inset-px rounded-[26px] bg-gradient-to-br ${experience.tone} opacity-0 transition duration-500 group-hover:opacity-100`}
-                  />
-                  <CardHeader className="relative z-10">
-                    <div className="mb-4 flex items-center justify-between">
-                      <span
-                        className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${statusStyles}`}
-                      >
-                        {experience.category}
-                      </span>
-                      <span className="text-xs font-medium text-slate-200/80">{experience.status}</span>
-                    </div>
-                    <CardTitle className="text-2xl font-semibold text-slate-50 transition-colors duration-300 group-hover:text-white">
-                      {experience.title}
-                    </CardTitle>
-                    <CardDescription className="mt-3 text-base leading-relaxed text-slate-200/80">
-                      {experience.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="relative z-10 mt-6 flex items-center justify-between border-t border-white/10 pt-6 text-sm text-slate-200/80">
-                    <span>
-                      {experience.status === "À venir"
-                        ? "Prototype en production : restez informé via les journaux du lab."
-                        : "Disponible dès maintenant dans le laboratoire."}
-                    </span>
-                    <span
-                      className={`text-sm font-semibold transition duration-300 ${
-                        experience.status === "Disponible" ? "text-emerald-200 group-hover:text-white" : "text-slate-400"
-                      }`}
-                    >
-                      {experience.status === "Disponible" ? "Lancer →" : "Soon"}
-                    </span>
-                  </CardContent>
-                </Card>
-              </CardWrapper>
-            )
-          })}
-        </div>
-
-        <footer className="mt-20 flex flex-col items-center gap-3 text-center text-sm text-slate-400/80">
-          <div className="h-px w-full max-w-3xl bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-          <p className="tracking-wide uppercase text-[11px] text-slate-400/70">Made with love by Sorokdva</p>
-          <p>© {year} Sorokdva. Tous droits réservés.</p>
-        </footer>
-      </div>
-    </section>
+      </footer>
+    </>
   )
 }
