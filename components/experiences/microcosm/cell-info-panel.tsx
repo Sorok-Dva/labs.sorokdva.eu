@@ -33,12 +33,15 @@ export function CellInfoPanel({ cell, onClose, onSelectCell, allCells, isTrackin
   const { parent, children } = getRelatives()
 
   return (
-    <Card className="absolute top-4 right-4 z-50 w-80 rounded-[24px] border border-white/10 bg-white/[0.07] backdrop-blur-xl shadow-[0_25px_70px_rgba(99,102,241,0.25)]">
-      <CardHeader className="space-y-3 pb-3">
+    <Card className="microcosm-organism">
+      <CardHeader className="microcosm-organism__header">
+        <span className="microcosm-organism__eyebrow">
+          {t ? t("microcosm.shell.organismFile", "Fiche organisme") : "Fiche organisme"}
+        </span>
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-lg text-white">
+          <CardTitle className="microcosm-organism__title">
             <div
-              className="w-4 h-4 rounded-full border-2"
+              className="microcosm-organism__cell-dot"
               style={{
                 backgroundColor: `hsl(${cell.kind === "herbivore" ? cell.genome.hue : (cell.genome.hue + 330) % 360}, 90%, 60%)`,
                 borderColor: `hsl(${cell.kind === "herbivore" ? cell.genome.hue : (cell.genome.hue + 330) % 360}, 90%, 70%)`,
@@ -52,72 +55,71 @@ export function CellInfoPanel({ cell, onClose, onSelectCell, allCells, isTrackin
                 variant={isTracking ? "default" : "outline"}
                 size="sm"
                 onClick={onToggleTracking}
-                className={
-                  isTracking
-                    ? "rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-emerald-400 text-slate-900 shadow-[0_10px_32px_rgba(76,29,149,0.35)]"
-                    : "rounded-full border-white/20 bg-white/10 text-slate-200 hover:bg-white/20"
-                }
+                className="microcosm-organism__track"
+                data-active={isTracking}
               >
                 {isTracking ? <Eye className="w-4 h-4 mr-1" /> : <EyeOff className="w-4 h-4 mr-1" />}
                 {isTracking ? (t ? t('microcosm.cell.following','Suivi') : 'Suivi') : (t ? t('microcosm.cell.follow','Suivre') : 'Suivre')}
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-full text-slate-200 hover:bg-white/10">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="microcosm-organism__close"
+              aria-label={t ? t("microcosm.shell.closeOrganism", "Fermer la fiche organisme") : "Fermer la fiche organisme"}
+            >
               <X className="w-4 h-4" />
             </Button>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="microcosm-organism__badges">
           <Badge
-            variant={cell.kind === "herbivore" ? "secondary" : "destructive"}
-            className={
-              cell.kind === "herbivore"
-                ? "border-emerald-400/30 bg-emerald-400/15 text-emerald-100"
-                : "border-rose-400/30 bg-rose-500/20 text-rose-100"
-            }
+            variant="outline"
+            data-tone={cell.kind === "herbivore" ? "ion" : "ember"}
           >
             {cell.kind === "herbivore" ? (t ? t('microcosm.cell.herbivore','Herbivore') : 'Herbivore') : (t ? t('microcosm.cell.predator','Prédateur') : 'Prédateur')}
           </Badge>
-          <Badge variant="outline" className="border-white/20 text-slate-200">
+          <Badge variant="outline">
             {(t ? t('microcosm.cell.gen','Gen') : 'Gen')} {cell.generation}
           </Badge>
           {cell.isFollowingParent && cell.followUntil && currentTime <= cell.followUntil && (
-            <Badge variant="secondary" className="border-purple-400/25 bg-purple-500/15 text-purple-100">
+            <Badge variant="outline" data-tone="sun">
               {t ? t('microcosm.cell.juvenile','Juvénile') : 'Juvénile'}
             </Badge>
           )}
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4 text-slate-200">
+      <CardContent className="microcosm-organism__content">
         {/* Stats vitaux */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="microcosm-organism__stats">
           <div className="space-y-1">
-            <div className="text-xs text-slate-400 flex items-center gap-1">
+            <div className="microcosm-organism__label">
               <Zap className="w-3 h-3" />
               {t ? t('microcosm.cell.energy','Énergie') : 'Énergie'}
             </div>
-            <div className="text-sm font-mono">{formatValue(cell.energy)}</div>
+            <div className="microcosm-organism__value">{formatValue(cell.energy)}</div>
           </div>
           <div className="space-y-1">
-            <div className="text-xs text-slate-400">{t ? t('microcosm.cell.age','Âge') : 'Âge'}</div>
-            <div className="text-sm font-mono">{cell.age} ticks</div>
+            <div className="microcosm-organism__label">{t ? t('microcosm.cell.age','Âge') : 'Âge'}</div>
+            <div className="microcosm-organism__value">{cell.age} ticks</div>
           </div>
           <div className="space-y-1">
-            <div className="text-xs text-slate-400">{t ? t('microcosm.cell.position','Position') : 'Position'}</div>
-            <div className="text-sm font-mono">
+            <div className="microcosm-organism__label">{t ? t('microcosm.cell.position','Position') : 'Position'}</div>
+            <div className="microcosm-organism__value">
               {formatValue(cell.pos.x, 0)}, {formatValue(cell.pos.y, 0)}
             </div>
           </div>
           <div className="space-y-1">
-            <div className="text-xs text-slate-400">{t ? t('microcosm.cell.speed','Vitesse') : 'Vitesse'}</div>
-            <div className="text-sm font-mono">{formatValue(Math.hypot(cell.vel.x, cell.vel.y))}</div>
+            <div className="microcosm-organism__label">{t ? t('microcosm.cell.speed','Vitesse') : 'Vitesse'}</div>
+            <div className="microcosm-organism__value">{formatValue(Math.hypot(cell.vel.x, cell.vel.y))}</div>
           </div>
         </div>
 
         {/* Génome */}
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-slate-200">{t ? t('microcosm.cell.genome','Génome') : 'Génome'}</h4>
+          <h4 className="microcosm-organism__section-title">{t ? t('microcosm.cell.genome','Génome') : 'Génome'}</h4>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="flex items-center gap-1">
               <Target className="w-3 h-3 text-slate-400" />
@@ -144,7 +146,7 @@ export function CellInfoPanel({ cell, onClose, onSelectCell, allCells, isTrackin
 
         {/* Lignée */}
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-slate-200 flex items-center gap-1">
+          <h4 className="microcosm-organism__section-title flex items-center gap-1">
             <Users className="w-4 h-4" />
             {t ? t('microcosm.cell.lineage','Lignée') : 'Lignée'}
           </h4>
@@ -192,7 +194,7 @@ export function CellInfoPanel({ cell, onClose, onSelectCell, allCells, isTrackin
 
         {/* Santé / Infection */}
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-slate-200">{t ? t('microcosm.cell.health','Santé') : 'Santé'}</h4>
+          <h4 className="microcosm-organism__section-title">{t ? t('microcosm.cell.health','Santé') : 'Santé'}</h4>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <span className="text-slate-400">{t ? t('microcosm.cell.infectionState','Statut infection') : 'Statut infection'}:</span>
@@ -220,7 +222,7 @@ export function CellInfoPanel({ cell, onClose, onSelectCell, allCells, isTrackin
         </div>
 
         {/* Stats de reproduction */}
-        <div className="pt-2 border-t border-slate-700">
+        <div className="pt-3 border-t border-hairline">
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <span className="text-slate-400">Descendance totale:</span>

@@ -5,6 +5,11 @@ import type { Drone, Formation, DroneSettings, DroneStats, Vec2 } from "./types"
 import { DRONE_DEFAULTS } from "./constants"
 import { DroneControlPanel } from "./control-panel"
 import { DroneInfoPanel } from "./drone-info-panel"
+import { FormationRail } from "./formation-rail"
+import { MissionDeck } from "./mission-deck"
+import { SwarmHeader } from "./swarm-header"
+import { SwarmPresentation } from "./swarm-presentation"
+import { useI18n } from "@/components/i18n/I18nProvider"
 
 const rand = (a = 0, b = 1) => Math.random() * (b - a) + a
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v))
@@ -58,7 +63,7 @@ class QuadTree {
     this.divided = true
   }
 
-  insert(x: number, y: number, i: number) {
+  insert(x: number, y: number, i: number): boolean {
     if (!this.contains(x, y)) return false
     if (this.points.length < this.capacity) {
       this.points.push({ x, y, i })
@@ -196,6 +201,9 @@ export default function DroneSwarm() {
   const [running, setRunning] = useState(true)
   const [settings, setSettings] = useState<DroneSettings>(DRONE_DEFAULTS)
   const [selectedDrone, setSelectedDrone] = useState<Drone | null>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [presentationOpen, setPresentationOpen] = useState(false)
+  const [repulsionActive, setRepulsionActive] = useState(false)
   const [stats, setStats] = useState<DroneStats>({
     totalDrones: 0,
     freeDrones: 0,
@@ -204,6 +212,21 @@ export default function DroneSwarm() {
     currentFormation: "default",
     autopilotActive: false,
   })
+  const panelStateRef = useRef({ settingsOpen: false, presentationOpen: false })
+  const { t } = useI18n()
+
+  useEffect(() => {
+    panelStateRef.current = { settingsOpen, presentationOpen }
+  }, [settingsOpen, presentationOpen])
+
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 1024px)")
+    const syncSettingsDrawer = () => setSettingsOpen(desktop.matches)
+
+    syncSettingsDrawer()
+    desktop.addEventListener("change", syncSettingsDrawer)
+    return () => desktop.removeEventListener("change", syncSettingsDrawer)
+  }, [])
 
   const markActivity = () => {
     lastActivity.current = performance.now()
@@ -220,7 +243,10 @@ export default function DroneSwarm() {
     const hue = BASE_HUES[Math.floor(rand(0, BASE_HUES.length))]
     const d: Drone = {
       id: drones.current.length,
-      pos: { x: rand(0, worldWidth), y: rand(0, worldHeight) },
+      pos: {
+        x: rand(-worldWidth / 2, worldWidth / 2),
+        y: rand(-worldHeight / 2, worldHeight / 2),
+      },
       vel: { x: rand(-1, 1), y: rand(-1, 1) },
       angle: 0,
       color: hsl(hue, 80, 65),
@@ -242,6 +268,8 @@ export default function DroneSwarm() {
       canvas.height = rect.height
     }
     resize()
+    const resizeObserver = new ResizeObserver(resize)
+    resizeObserver.observe(container)
 
     if (drones.current.length === 0) {
       for (let i = 0; i < settings.droneCount; i++) addDrone()
@@ -280,7 +308,7 @@ export default function DroneSwarm() {
       const p = getMouse(e)
       let found: number | null = null
       for (let i = drones.current.length - 1; i >= 0; i--) {
-        if (Math.hypot(drones.current[i].pos.x - p.x, drones.current[i].pos.y - p.y) < 18 / zoom.current) {
+        if (Math.hypot(drones.current[i].pos.x - p.x, drones.current[i].pos.y - p.y) < 26 / zoom.current) {
           found = i
           break
         }
@@ -291,7 +319,12 @@ export default function DroneSwarm() {
       initAudio()?.ctx.resume()
       if (found !== null) {
         setSelectedDrone(drones.current[found])
+        setSettingsOpen(false)
+        setPresentationOpen(false)
+      } else {
+        setSelectedDrone(null)
       }
+      setStats((previous) => ({ ...previous, hasLeader: found !== null }))
 
       markActivity()
     }
@@ -313,7 +346,17 @@ export default function DroneSwarm() {
     }
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setRunning((prev) => !prev)
+      if (e.key === "Escape") {
+        if (panelStateRef.current.presentationOpen) {
+          setPresentationOpen(false)
+          return
+        }
+        if (panelStateRef.current.settingsOpen) {
+          setSettingsOpen(false)
+          return
+        }
+        setRunning((prev) => !prev)
+      }
       if (e.key === "Enter") {
         leader.current = null
         setSelectedDrone(null)
@@ -321,6 +364,7 @@ export default function DroneSwarm() {
       if (e.key === " ") {
         e.preventDefault()
         repulsive.current = !repulsive.current
+        setRepulsionActive(repulsive.current)
       }
       if (e.key === "ArrowLeft") formation.current = "compact"
       if (e.key === "ArrowUp") formation.current = "line"
@@ -338,19 +382,20 @@ export default function DroneSwarm() {
 
     window.addEventListener("resize", resize)
     window.addEventListener("mousemove", onMove)
-    window.addEventListener("mousedown", onDown)
     window.addEventListener("mouseup", onUp)
-    window.addEventListener("click", onClick)
-    window.addEventListener("wheel", onWheel, { passive: false })
+    canvas.addEventListener("mousedown", onDown)
+    canvas.addEventListener("click", onClick)
+    canvas.addEventListener("wheel", onWheel, { passive: false })
     window.addEventListener("keydown", onKey)
 
     return () => {
+      resizeObserver.disconnect()
       window.removeEventListener("resize", resize)
       window.removeEventListener("mousemove", onMove)
-      window.removeEventListener("mousedown", onDown)
       window.removeEventListener("mouseup", onUp)
-      window.removeEventListener("click", onClick)
-      window.removeEventListener("wheel", onWheel)
+      canvas.removeEventListener("mousedown", onDown)
+      canvas.removeEventListener("click", onClick)
+      canvas.removeEventListener("wheel", onWheel)
       window.removeEventListener("keydown", onKey)
     }
   }, [addDrone])
@@ -518,10 +563,25 @@ export default function DroneSwarm() {
       v = limit(v, settings.maxSpeed)
       p = add(p, mul(v, dt))
 
-      if (p.x < -worldWidth / 2) p.x = worldWidth / 2
-      if (p.y < -worldHeight / 2) p.y = worldHeight / 2
-      if (p.x > worldWidth / 2) p.x = -worldWidth / 2
-      if (p.y > worldHeight / 2) p.y = -worldHeight / 2
+      let wrapped = false
+      if (p.x < -worldWidth / 2) {
+        p.x = worldWidth / 2
+        wrapped = true
+      }
+      if (p.y < -worldHeight / 2) {
+        p.y = worldHeight / 2
+        wrapped = true
+      }
+      if (p.x > worldWidth / 2) {
+        p.x = -worldWidth / 2
+        wrapped = true
+      }
+      if (p.y > worldHeight / 2) {
+        p.y = -worldHeight / 2
+        wrapped = true
+      }
+
+      if (wrapped) d.trail = []
 
       d.angle = Math.atan2(v.y, v.x)
 
@@ -567,8 +627,43 @@ export default function DroneSwarm() {
   }
 
   const draw = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
-    ctx.fillStyle = "rgba(2,10,22,0.15)"
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    const backdrop = ctx.createRadialGradient(
+      canvas.width / 2,
+      canvas.height / 2,
+      0,
+      canvas.width / 2,
+      canvas.height / 2,
+      Math.max(canvas.width, canvas.height) * 0.75,
+    )
+    backdrop.addColorStop(0, "rgba(9,19,37,1)")
+    backdrop.addColorStop(1, "rgba(4,6,13,1)")
+    ctx.fillStyle = backdrop
     ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    // Radar registration remains screen-space while the swarm moves through world-space.
+    ctx.save()
+    const radarX = canvas.width / 2
+    const radarY = canvas.height / 2
+    const radarStep = Math.max(145, Math.min(canvas.width, canvas.height) * 0.19)
+    ctx.strokeStyle = "rgba(124,196,255,0.065)"
+    ctx.lineWidth = 1
+    for (let radius = radarStep; radius < Math.max(canvas.width, canvas.height); radius += radarStep) {
+      ctx.beginPath()
+      ctx.arc(radarX, radarY, radius, 0, Math.PI * 2)
+      ctx.stroke()
+    }
+
+    ctx.strokeStyle = "rgba(27,34,54,0.7)"
+    ctx.setLineDash([3, 14])
+    ctx.beginPath()
+    ctx.moveTo(0, radarY)
+    ctx.lineTo(canvas.width, radarY)
+    ctx.moveTo(radarX, 0)
+    ctx.lineTo(radarX, canvas.height)
+    ctx.stroke()
+    ctx.setLineDash([])
+    ctx.restore()
 
     // Apply camera transform
     ctx.save()
@@ -609,15 +704,15 @@ export default function DroneSwarm() {
     ctx.shadowBlur = 0
     for (const d of drones.current) {
       if (d.trail.length > 3) {
-        ctx.beginPath()
-        ctx.moveTo(d.trail[0].x, d.trail[0].y)
         for (let j = 1; j < d.trail.length; j++) {
           const alpha = (j / d.trail.length) * 0.3
+          ctx.beginPath()
+          ctx.moveTo(d.trail[j - 1].x, d.trail[j - 1].y)
+          ctx.lineTo(d.trail[j].x, d.trail[j].y)
           ctx.strokeStyle = hsl(d.baseHue, 90, 70, alpha)
           ctx.lineWidth = 1.5
-          ctx.lineTo(d.trail[j].x, d.trail[j].y)
+          ctx.stroke()
         }
-        ctx.stroke()
       }
     }
 
@@ -685,6 +780,14 @@ export default function DroneSwarm() {
     setSelectedDrone(null)
     formation.current = "default"
     autopilot.current = false
+    repulsive.current = false
+    setRepulsionActive(false)
+    setStats((previous) => ({
+      ...previous,
+      hasLeader: false,
+      currentFormation: "default",
+      autopilotActive: false,
+    }))
     for (let i = 0; i < settings.droneCount; i++) addDrone()
   }
 
@@ -701,6 +804,11 @@ export default function DroneSwarm() {
   const handleSetFormation = (newFormation: Formation) => {
     formation.current = newFormation
     autopilot.current = false
+    setStats((previous) => ({
+      ...previous,
+      currentFormation: newFormation,
+      autopilotActive: false,
+    }))
     markActivity()
   }
 
@@ -708,92 +816,113 @@ export default function DroneSwarm() {
     leader.current = null
     drones.current.forEach((d) => (d.state = "free"))
     setSelectedDrone(null)
+    setStats((previous) => ({
+      ...previous,
+      hasLeader: false,
+      followingDrones: 0,
+      freeDrones: drones.current.length,
+    }))
     markActivity()
   }
 
   const handleToggleRepulsion = () => {
     repulsive.current = !repulsive.current
+    setRepulsionActive(repulsive.current)
     markActivity()
   }
 
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-slate-100 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text [&]:text-slate-100 supports-[background-clip:text]:text-transparent">
-                Essaim de Drones — Intelligence collective
-              </h1>
-              <p className="text-slate-200 text-sm mt-1">
-                Une expérience visuelle et interactive où des drones lumineux évoluent selon des règles émergentes.
-                Cliquez pour prendre le contrôle d'un drone leader.
-              </p>
-            </div>
-            <div className="hidden md:flex gap-4 text-sm">
-              <div className="text-center">
-                <div className="text-yellow-400 font-mono text-lg">{fpsRef.current}</div>
-                <div className="text-slate-500 text-xs">FPS</div>
-              </div>
-              <div className="text-center">
-                <div className="text-cyan-400 font-mono text-lg">{stats.totalDrones}</div>
-                <div className="text-slate-500 text-xs">Drones</div>
-              </div>
-              <div className="text-center">
-                <div className="text-purple-400 font-mono text-lg">{stats.followingDrones}</div>
-                <div className="text-slate-500 text-xs">Suiveurs</div>
-              </div>
-              <div className="text-center">
-                <div className="text-emerald-400 font-mono text-lg">{stats.freeDrones}</div>
-                <div className="text-slate-500 text-xs">Libres</div>
-              </div>
-              <div className="text-center">
-                <div className="text-orange-400 font-mono text-lg">{Math.round(zoom.current * 100)}%</div>
-                <div className="text-slate-500 text-xs">Zoom</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  const closeSettings = useCallback(() => setSettingsOpen(false), [])
+  const closePresentation = useCallback(() => setPresentationOpen(false), [])
 
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)]">
-        <div ref={containerRef} className="flex-1 relative overflow-hidden">
+  const handleToggleSettings = useCallback(() => {
+    setPresentationOpen(false)
+    setSelectedDrone(null)
+    setSettingsOpen((value) => !value)
+  }, [])
+
+  const handleTogglePresentation = useCallback(() => {
+    setSettingsOpen(false)
+    setSelectedDrone(null)
+    setPresentationOpen((value) => !value)
+  }, [])
+
+  return (
+    <div className="swarm-shell">
+      <SwarmHeader stats={stats} t={t} />
+
+      <div className="swarm-workspace">
+        <FormationRail activeFormation={stats.currentFormation} onSetFormation={handleSetFormation} t={t} />
+
+        <section ref={containerRef} className="swarm-stage">
           <canvas
             ref={canvasRef}
-            className={`block w-full h-full ${dragging.current ? "cursor-grabbing" : "cursor-grab"}`}
+            className={dragging.current ? "cursor-grabbing" : "cursor-grab"}
+            aria-label={t(
+              "swarm.shell.canvasLabel",
+              "Simulation interactive Swarm Intel. Cliquez sur un drone pour choisir un leader, puis glissez pour le guider.",
+            )}
           />
 
-          {selectedDrone && !isDraggingLeader.current && (
-            <DroneInfoPanel drone={selectedDrone} onClose={() => setSelectedDrone(null)} />
-          )}
+          {selectedDrone && !isDraggingLeader.current ? (
+            <DroneInfoPanel drone={selectedDrone} onClose={() => setSelectedDrone(null)} t={t} />
+          ) : null}
 
-          <div className="pointer-events-none absolute left-4 bottom-4 text-xs text-slate-300/80 select-none">
-            <div className="backdrop-blur-sm bg-slate-900/30 rounded-xl px-3 py-2 leading-relaxed">
-              <div className="font-medium text-slate-200/90">
-                Mode {stats.currentFormation} — {stats.autopilotActive ? "Autopilote" : "Manuel"} — {fpsRef.current} FPS
-                — Zoom {Math.round(zoom.current * 100)}%
-              </div>
-              <div>Click → choisir leader · Drag → guider · Scroll → {leader.current !== null ? "rayon" : "zoom"}</div>
-              <div>WASD → caméra · Flèches → formations · Entrée → relâcher · Échap → pause</div>
-            </div>
+          <div className="swarm-gesture-strip" aria-hidden="true">
+            <span>{t("swarm.gesture.click", "Clic : choisir le leader")}</span>
+            <i />
+            <span>{t("swarm.gesture.drag", "Glisser : guider")}</span>
+            <i />
+            <span>{t("swarm.gesture.scroll", "Molette : rayon / zoom")}</span>
+            <i />
+            <span>{t("swarm.gesture.camera", "WASD : caméra")}</span>
           </div>
-        </div>
 
-        <div className="lg:w-96 p-4 border-l border-slate-800 bg-slate-900/30 backdrop-blur-sm overflow-y-auto">
+          {presentationOpen ? (
+            <>
+              <button
+                type="button"
+                className="experience-presentation-backdrop"
+                aria-label={t("swarm.presentation.close", "Fermer la présentation")}
+                onClick={closePresentation}
+              />
+              <SwarmPresentation onClose={closePresentation} t={t} />
+            </>
+          ) : null}
+        </section>
+
+        {settingsOpen ? (
+          <>
+            <button
+              type="button"
+              className="swarm-settings-backdrop"
+              aria-label={t("swarm.shell.closeSettings", "Fermer les réglages")}
+              onClick={closeSettings}
+            />
           <DroneControlPanel
             settings={settings}
-            stats={stats}
-            running={running}
             onSettingsChange={handleSettingsChange}
-            onToggleRun={handleToggleRun}
-            onReset={handleReset}
-            onSnapshot={handleSnapshot}
-            onSetFormation={handleSetFormation}
-            onReleaseLeader={handleReleaseLeader}
-            onToggleRepulsion={handleToggleRepulsion}
+              onClose={closeSettings}
+              t={t}
           />
-        </div>
+          </>
+        ) : null}
       </div>
+
+      <MissionDeck
+        running={running}
+        hasLeader={stats.hasLeader}
+        repulsionActive={repulsionActive}
+        presentationOpen={presentationOpen}
+        settingsOpen={settingsOpen}
+        onToggleRun={handleToggleRun}
+        onReset={handleReset}
+        onSnapshot={handleSnapshot}
+        onReleaseLeader={handleReleaseLeader}
+        onToggleRepulsion={handleToggleRepulsion}
+        onTogglePresentation={handleTogglePresentation}
+        onToggleSettings={handleToggleSettings}
+        t={t}
+      />
     </div>
   )
 }

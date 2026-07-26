@@ -3,13 +3,15 @@
 import { useEffect, useRef, useState, useCallback } from "react"
 import type { Cell, Food, Toxin, Settings, VisSettings, Genome, Vec2, CellTrackingInfo } from "./types"
 import { DEFAULTS, PRESETS } from "./constants"
-import { rand, clamp, dist2, norm, add, sub, mul, roundRect } from "./utils"
-import { ControlPanel } from "./control-panel"
+import { rand, clamp, dist2, norm, add, sub, mul } from "./utils"
+import { ControlDeck } from "./control-deck"
 import { CellInfoPanel } from "./cell-info-panel"
 import { ContextMenu } from "./context-menu"
+import { MicrocosmHeader } from "./microcosm-header"
+import { MicrocosmPresentation } from "./microcosm-presentation"
+import { SettingsDrawer } from "./settings-drawer"
 import { type Camera, createCamera, updateCamera, screenToWorld, isInViewport } from "./camera"
 import { useI18n } from "@/components/i18n/I18nProvider"
-import { BackToHome } from '@/components/experiences/microcosm/back-to-home'
 
 export default function Microcosm() {
   // Refs
@@ -32,6 +34,8 @@ export default function Microcosm() {
   const [isTracking, setIsTracking] = useState(false)
 
   const [contextMenu, setContextMenu] = useState<{ position: { x: number; y: number }; worldPos: Vec2 } | null>(null)
+  const [presentationOpen, setPresentationOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const { t, lang } = useI18n()
 
   const cameraRef = useRef<Camera>(createCamera())
@@ -43,6 +47,15 @@ export default function Microcosm() {
   const [isInteracting, setIsInteracting] = useState(false)
   const interactDebounceRef = useRef<number | null>(null)
   const interactingRef = useRef(false)
+
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 1024px)")
+    const syncSettingsDrawer = () => setSettingsOpen(desktop.matches)
+
+    syncSettingsDrawer()
+    desktop.addEventListener("change", syncSettingsDrawer)
+    return () => desktop.removeEventListener("change", syncSettingsDrawer)
+  }, [])
 
   const kickInteraction = useCallback(() => {
     setIsInteracting(true)
@@ -79,7 +92,7 @@ export default function Microcosm() {
     worldHeight: 3000,
   })
 
-  // Resize canvas responsively
+  // Resize the canvas whenever its actual stage changes, including drawer toggles.
   useEffect(() => {
     const resize = () => {
       const el = containerRef.current
@@ -96,9 +109,16 @@ export default function Microcosm() {
       hud.style.width = rect.width + "px"
       hud.style.height = rect.height + "px"
     }
+
     resize()
+    const observer = new ResizeObserver(resize)
+    if (containerRef.current) observer.observe(containerRef.current)
     window.addEventListener("resize", resize)
-    return () => window.removeEventListener("resize", resize)
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("resize", resize)
+    }
   }, [dpr])
 
   useEffect(() => {
@@ -280,7 +300,10 @@ export default function Microcosm() {
           y: camera.y + rand(-200, 200),
         })
       }
-      if (k === "escape") setSelectedCell(null)
+      if (k === "escape") {
+        setSelectedCell(null)
+        setSettingsOpen(false)
+      }
     }
     window.addEventListener("keydown", onKey)
 
@@ -1191,47 +1214,53 @@ export default function Microcosm() {
       hctx.fillRect(0, 0, width, height)
     }
 
-    // Stats pill
-    const pad = 10
-    const pillW = 320 * dpr // Wider to fit camera info
-    const pillH = 150 * dpr // Made taller for new instructions
-    const x = pad * dpr
-    const y = pad * dpr
-    hctx.fillStyle = "rgba(10,12,18,0.55)"
-    roundRect(hctx, x, y, pillW, pillH, 14 * dpr)
-    hctx.fill()
+    // Compact viewport telemetry. Population and help live in the app chrome.
+    const hudX = 18 * dpr
+    const hudY = 24 * dpr
+    hctx.font = `${10 * dpr}px "Space Mono", ui-monospace, monospace`
+    hctx.fillStyle = "rgba(151,160,181,0.88)"
+    hctx.fillText(
+      `X ${Math.round(camera.x)} // Y ${Math.round(camera.y)} // Z ${camera.zoom.toFixed(2)} // ${perf ? "PERF" : "FULL"}`,
+      hudX,
+      hudY,
+    )
 
-    hctx.font = `${14 * dpr}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas`
-    hctx.fillStyle = "rgba(220,230,255,0.85)"
-    hctx.fillText(`${t('microcosm.hud.fps','FPS')}: ${fps}`, x + 14 * dpr, y + 22 * dpr)
-    hctx.fillText(`${t('microcosm.hud.herbivores','Herbivores')}: ${stats.herbs}`, x + 14 * dpr, y + 40 * dpr)
-    hctx.fillText(`${t('microcosm.hud.predators','Prédateurs')}: ${stats.preds}`, x + 14 * dpr, y + 58 * dpr)
-    hctx.fillText(`${t('microcosm.hud.food','Nourriture')}: ${stats.food}`, x + 140 * dpr, y + 40 * dpr)
-    hctx.fillText(`Zoom: ${camera.zoom.toFixed(1)}x`, x + 140 * dpr, y + 58 * dpr)
-    hctx.fillText(`Pos: ${Math.round(camera.x)}, ${Math.round(camera.y)}`, x + 14 * dpr, y + 76 * dpr)
-    hctx.fillText(`Perf: ${perf ? 'ON' : 'OFF'}`, x + 140 * dpr, y + 76 * dpr)
-    const trailsLabel = vis.trailsEnabled ? (vis.trailColorMode === 'byGenome' ? 'colored' : 'mono') : 'off'
-    hctx.fillText(`${t('microcosm.controls.trails','Traînées')}: ${trailsLabel}`, x + 14 * dpr, y + 94 * dpr)
-    hctx.fillText(t('microcosm.hud.hint1','Molette=zoom • Glisser=déplacer • Clic cellule=infos'), x + 14 * dpr, y + 112 * dpr)
-    hctx.fillText(t('microcosm.hud.hint2','Clic vide=menu • Ctrl/Shift/Alt+clic=direct'), x + 14 * dpr, y + 130 * dpr)
+    if (!running) {
+      hctx.font = `700 ${11 * dpr}px "Space Mono", ui-monospace, monospace`
+      hctx.fillStyle = "rgba(255,201,120,0.95)"
+      hctx.textAlign = "center"
+      hctx.fillText(t("microcosm.hud.paused", "PAUSE"), width / 2, height / 2)
+      hctx.textAlign = "start"
+    }
   }
 
   // Handlers
-  const handleSettingsChange = (newSettings: Partial<Settings>) => {
+  const handleSettingsChange = useCallback((newSettings: Partial<Settings>) => {
     setSettings((prev) => ({ ...prev, ...newSettings }))
-  }
+  }, [])
 
-  const handleVisSettingsChange = (newVis: Partial<VisSettings>) => {
+  const handleVisSettingsChange = useCallback((newVis: Partial<VisSettings>) => {
     setVis((prev) => ({ ...prev, ...newVis }))
-  }
+  }, [])
 
-  const handlePresetChange = (key: string) => {
+  const handlePresetChange = useCallback((key: string) => {
     const preset = PRESETS[key]
     setPresetKey(key)
     const merged = { ...settings, ...preset }
     setSettings(merged)
     resetWorld(merged)
-  }
+  }, [resetWorld, settings])
+
+  const closeSettings = useCallback(() => setSettingsOpen(false), [])
+  const closePresentation = useCallback(() => setPresentationOpen(false), [])
+  const togglePresentation = useCallback(() => {
+    setSettingsOpen(false)
+    setPresentationOpen((value) => !value)
+  }, [])
+  const toggleSettings = useCallback(() => {
+    setPresentationOpen(false)
+    setSettingsOpen((value) => !value)
+  }, [])
 
   const handleSelectCell = (cellId: number) => {
     const world = worldRef.current
@@ -1261,193 +1290,136 @@ export default function Microcosm() {
     setContextMenu(null)
   }
 
+  const spawnFoodNearCamera = () => {
+    const camera = cameraRef.current
+    dropFoodCluster(
+      {
+        x: camera.x + rand(-200, 200),
+        y: camera.y + rand(-200, 200),
+      },
+      28,
+    )
+  }
+
+  const spawnToxinNearCamera = () => {
+    const camera = cameraRef.current
+    spawnToxin({
+      x: camera.x + rand(-200, 200),
+      y: camera.y + rand(-200, 200),
+    })
+  }
+
+  const spawnPredatorNearCamera = () => {
+    const camera = cameraRef.current
+    spawnPredator({
+      x: camera.x + rand(-200, 200),
+      y: camera.y + rand(-200, 200),
+    })
+  }
+
   return (
-    <div className="relative h-screen overflow-hidden bg-[#030712] text-slate-100">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(76,29,149,0.32),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom,rgba(16,185,129,0.22),transparent_62%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(2,6,23,0.95),rgba(15,23,42,0.88),rgba(2,6,23,0.97))]" />
-      </div>
+    <div className="microcosm-shell">
+      <MicrocosmHeader stats={stats} t={t} />
 
-      <main className="relative z-10 flex h-full flex-col overflow-hidden">
-        <header>
-          <div className="w-fullsm:px-6">
-            <div className="relative overflow-hidden border border-white/10 bg-white/[0.05] shadow-[0_24px_60px_rgba(99,102,241,0.18)] backdrop-blur-xl">
-              <div className="pointer-events-none absolute -top-32 right-8 h-56 w-56 rounded-full bg-purple-500/30 blur-3xl" />
-              <div className="pointer-events-none absolute -bottom-44 left-10 h-64 w-64 rounded-full bg-emerald-400/25 blur-3xl" />
-              <div className="flex flex-col gap-3 p-2 h-[15vh] md:flex-row md:items-center md:justify-between">
-                <div className="max-w-4xl space-y-1.5">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <BackToHome />
-                      <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-purple-100">
-                        {t("microcosm.header.badge", "Simulation vivante")}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="">
-                    <h1 className="bg-gradient-to-br from-purple-200 via-sky-200 to-emerald-200 bg-clip-text text-xl font-semibold text-transparent sm:text-2xl">
-                      {t("microcosm.header.title", "Microcosm · Cabinet vivant")}
-                    </h1>
-                    <p className="text-xs text-slate-200/80 sm:text-sm">
-                      {t(
-                        "microcosm.header.subtitle",
-                        "Un écosystème proie–prédateur génératif où chaque créature porte un génome minimal. Intervenez pour observer émergence, mutations et équilibres fragiles.",
-                      )}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-3 text-[10px] font-medium text-slate-200/80">
-                      <span className="inline-flex items-center gap-1 text-purple-200/80">
-                        {t("microcosm.header.hook.one", "Gestes clés")}:
-                        <span className="text-slate-100">{t("microcosm.header.hook.oneValue", "Molette = zoom | Glisser = orbiter")}</span>
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-emerald-200/80">
-                        {t("microcosm.header.hook.two", "Interventions")}:
-                        <span className="text-slate-100">{t("microcosm.header.hook.twoValue", "Ctrl = nourrir | Shift = toxine | Alt = prédateur")}</span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid w-full max-w-xs grid-cols-3 gap-1.5 rounded-[16px] bg-white/[0.04] max-h-[15px] p-2">
-                  {[
-                    {
-                      label: t("microcosm.stats.herbivores", "Herbivores"),
-                      value: stats.herbs,
-                      accent: "from-emerald-400/60 via-emerald-500/40 to-teal-400/40",
-                    },
-                    {
-                      label: t("microcosm.stats.predators", "Prédateurs"),
-                      value: stats.preds,
-                      accent: "from-rose-500/50 via-purple-500/40 to-orange-500/40",
-                    },
-                    {
-                      label: t("microcosm.stats.food", "Nourriture"),
-                      value: stats.food,
-                      accent: "from-cyan-400/60 via-sky-500/40 to-indigo-500/40",
-                    },
-                  ].map((item) => (
-                    <div key={item.label} className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.08] p-2">
-                      <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${item.accent} opacity-30`} />
-                      <div className="relative flex flex-col gap-0.5">
-                        <span className="text-[9px] uppercase tracking-[0.28em] text-slate-200/70">{item.label}</span>
-                        <span className="text-base font-semibold text-white font-mono">{item.value}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <section className="flex-1 overflow-hidden">
-          <div className="flex h-full w-full flex-col overflow-hidden lg:flex-row">
-            <div
-              ref={containerRef}
-              className="relative flex-1 min-h-[360px] overflow-hidden border border-white/10 bg-black/25 shadow-[0_30px_100px_rgba(76,29,149,0.25)] backdrop-blur-xl"
-            >
-              <canvas
-                ref={canvasRef}
-                className={`absolute inset-0 h-full w-full ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
-              />
-              <canvas ref={hudRef} className="pointer-events-none absolute inset-0 h-full w-full" />
-
-              {selectedCell && (
-                <CellInfoPanel
-                  cell={selectedCell}
-                  onClose={() => {
-                    setSelectedCell(null)
-                    setIsTracking(false)
-                  }}
-                  onSelectCell={handleSelectCell}
-                  allCells={worldRef.current.cells}
-                  t={t}
-                  isTracking={isTracking}
-                  onToggleTracking={() => {
-                    setIsTracking((v) => {
-                      const next = !v
-                      if (next && selectedCell) {
-                        const camera = cameraRef.current
-                        camera.x = selectedCell.pos.x
-                        camera.y = selectedCell.pos.y
-                      }
-                      return next
-                    })
-                  }}
-                  currentTime={worldRef.current.t}
-                />
-              )}
-
-              {contextMenu && (
-                <ContextMenu
-                  position={contextMenu.position}
-                  onAction={handleContextMenuAction}
-                  onClose={() => setContextMenu(null)}
-                  t={t}
-                />
-              )}
-            </div>
-
-            <aside className="flex flex-col gap-6 lg:basis-1/4 lg:min-w-[18rem] lg:sticky lg:top-4 lg:max-h-[calc(100vh-140px)] lg:overflow-y-auto">
-              <ControlPanel
-                settings={settings}
-                visSettings={vis}
-                presetKey={presetKey}
-                running={running}
-                stats={stats}
-                onSettingsChange={handleSettingsChange}
-                onVisSettingsChange={handleVisSettingsChange}
-                onPresetChange={handlePresetChange}
-                onToggleRun={toggleRun}
-                onReset={resetWorld}
-                onSnapshot={snapshot}
-                t={t}
-                onSpawnFood={() => {
+      <section className="microcosm-stage">
+        {selectedCell ? (
+          <CellInfoPanel
+            cell={selectedCell}
+            onClose={() => {
+              setSelectedCell(null)
+              setIsTracking(false)
+            }}
+            onSelectCell={handleSelectCell}
+            allCells={worldRef.current.cells}
+            t={t}
+            isTracking={isTracking}
+            onToggleTracking={() => {
+              setIsTracking((value) => {
+                const next = !value
+                if (next && selectedCell) {
                   const camera = cameraRef.current
-                  dropFoodCluster(
-                    {
-                      x: camera.x + rand(-200, 200),
-                      y: camera.y + rand(-200, 200),
-                    },
-                    28,
-                  )
-                }}
-                onSpawnToxin={() => {
-                  const camera = cameraRef.current
-                  spawnToxin({
-                    x: camera.x + rand(-200, 200),
-                    y: camera.y + rand(-200, 200),
-                  })
-                }}
-                onSpawnPredator={() => {
-                  const camera = cameraRef.current
-                  spawnPredator({
-                    x: camera.x + rand(-200, 200),
-                    y: camera.y + rand(-200, 200),
-                  })
-                }}
-              />
+                  camera.x = selectedCell.pos.x
+                  camera.y = selectedCell.pos.y
+                }
+                return next
+              })
+            }}
+            currentTime={worldRef.current.t}
+          />
+        ) : null}
 
-              <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-6 text-sm leading-relaxed text-slate-200/85 shadow-[0_25px_70px_rgba(45,212,191,0.18)] backdrop-blur-xl">
-                <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-300">
-                  {t("microcosm.sidebar.notesTitle", "Notes de terrain")}
-                </h2>
-                <p className="mt-3 text-xs text-slate-300/85">
-                  {t(
-                    "microcosm.sidebar.notesBody",
-                    "Les traînées colorées révèlent l'empreinte des colonies. Activez le mode performance quand le nuage devient trop dense ou que votre machine souffre.",
-                  )}
-                </p>
-                <ul className="mt-4 space-y-2 text-xs text-slate-300/80">
-                  <li>{t("microcosm.sidebar.noteOne", "• Cliquez une cellule pour ouvrir sa fiche génétique.")}</li>
-                  <li>{t("microcosm.sidebar.noteTwo", "• Activez le suivi pour verrouiller la caméra sur un organisme en mutation.")}</li>
-                  <li>{t("microcosm.sidebar.noteThree", "• Les presets modèlent des climats différents : testez-les pour révéler d'autres équilibres.")}</li>
-                </ul>
-              </div>
-            </aside>
-          </div>
-        </section>
-      </main>
+        <div ref={containerRef} className="microcosm-canvas">
+          <canvas
+            ref={canvasRef}
+            className={isDragging ? "cursor-grabbing" : "cursor-grab"}
+            aria-label={t(
+              "microcosm.shell.canvasLabel",
+              "Simulation interactive Microcosm. Utilisez la molette pour zoomer et faites glisser pour vous déplacer.",
+            )}
+          >
+            {t("microcosm.header.subtitle", "Simulation interactive de vie artificielle.")}
+          </canvas>
+          <canvas ref={hudRef} aria-hidden="true" />
+
+          {contextMenu ? (
+            <ContextMenu
+              position={contextMenu.position}
+              onAction={handleContextMenuAction}
+              onClose={() => setContextMenu(null)}
+              t={t}
+            />
+          ) : null}
+        </div>
+
+        {settingsOpen ? (
+          <>
+            <button
+              type="button"
+              className="microcosm-settings-backdrop"
+              aria-label={t("microcosm.shell.closeSettings", "Fermer les réglages")}
+              onClick={closeSettings}
+            />
+            <SettingsDrawer
+              settings={settings}
+              visSettings={vis}
+              presetKey={presetKey}
+              onSettingsChange={handleSettingsChange}
+              onVisSettingsChange={handleVisSettingsChange}
+              onPresetChange={handlePresetChange}
+              onClose={closeSettings}
+              t={t}
+            />
+          </>
+        ) : null}
+
+        {presentationOpen ? (
+          <>
+            <button
+              type="button"
+              className="experience-presentation-backdrop"
+              aria-label={t("microcosm.shell.closePresentation", "Fermer la présentation")}
+              onClick={closePresentation}
+            />
+            <MicrocosmPresentation onClose={closePresentation} t={t} />
+          </>
+        ) : null}
+      </section>
+
+      <ControlDeck
+        running={running}
+        fps={fps}
+        presentationOpen={presentationOpen}
+        settingsOpen={settingsOpen}
+        onToggleRun={toggleRun}
+        onReset={() => resetWorld()}
+        onSnapshot={snapshot}
+        onSpawnFood={spawnFoodNearCamera}
+        onSpawnToxin={spawnToxinNearCamera}
+        onSpawnPredator={spawnPredatorNearCamera}
+        onTogglePresentation={togglePresentation}
+        onToggleSettings={toggleSettings}
+        t={t}
+      />
     </div>
   )
 }

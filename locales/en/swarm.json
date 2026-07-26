@@ -1,0 +1,129 @@
+{
+  "shell": {
+    "back": "Back to cabinet",
+    "index": "EXP. 02 / 05",
+    "telemetry": "Swarm telemetry",
+    "missionState": "Mission state",
+    "leaderActive": "Leader active",
+    "autonomous": "Autonomous",
+    "radarNominal": "RADAR_NOMINAL",
+    "leaderLink": "LEADER_LINK",
+    "autopilotStatus": "AUTO_PILOT",
+    "presentation": "Introduction",
+    "settings": "Settings",
+    "settingsIndex": "SYS. 02",
+    "closeSettings": "Close settings",
+    "closePresentation": "Close introduction",
+    "canvasLabel": "Interactive Swarm Intel simulation. Click a drone to choose a leader, then drag to guide it."
+  },
+  "stats": {
+    "drones": "Drones",
+    "followers": "Followers",
+    "free": "Free",
+    "mode": "Mode",
+    "zoom": "Zoom",
+    "status": "Status"
+  },
+  "controls": {
+    "play": "Play",
+    "pause": "Pause",
+    "reset": "Reset",
+    "snapshot": "Snapshot",
+    "releaseLeader": "Release leader",
+    "repulsion": "Repulsion",
+    "formations": "Formations",
+    "presets": "Presets",
+    "physics": "Physics",
+    "collectiveRules": "Collective rules",
+    "signal": "Signal"
+  },
+  "formations": {
+    "default": "Free",
+    "compact": "Compact",
+    "line": "Line",
+    "spiral": "Spiral"
+  },
+  "settings": {
+    "droneCount": "Drones",
+    "maxSpeed": "Speed",
+    "cohesion": "Cohesion",
+    "alignment": "Alignment",
+    "separation": "Separation",
+    "influence": "Influence radius",
+    "trails": "Trails",
+    "audio": "Reactive audio"
+  },
+  "presets": {
+    "gentle": {
+      "label": "Gentle",
+      "hint": "Fluid, harmonious motion"
+    },
+    "chaotic": {
+      "label": "Chaotic",
+      "hint": "Erratic and unpredictable motion"
+    },
+    "swarm": {
+      "label": "Swarm",
+      "hint": "Dense, coordinated formation"
+    },
+    "minimal": {
+      "label": "Minimal",
+      "hint": "Small contemplative group"
+    }
+  },
+  "help": {
+    "droneCount": "Total number of drones in the swarm.",
+    "maxSpeed": "Maximum drone speed.",
+    "cohesion": "Attraction strength toward the group center.",
+    "alignment": "Tendency to follow the group direction.",
+    "separation": "Repulsion force used to avoid collisions.",
+    "influence": "Leader drone influence radius.",
+    "trails": "Length of luminous trails."
+  },
+  "gesture": {
+    "click": "Click: choose leader",
+    "drag": "Drag: guide",
+    "scroll": "Wheel: radius / zoom",
+    "camera": "WASD: camera"
+  },
+  "presentation": {
+    "eyebrow": "Experience introduction",
+    "title": "Swarm Intel — Collective intelligence",
+    "body": "A swarm of luminous drones whose paths emerge from a few simple rules. Choose a leader, guide it, and watch the group organize itself.",
+    "choose": {
+      "title": "Choose",
+      "body": "Click a drone to make it the leader."
+    },
+    "guide": {
+      "title": "Guide",
+      "body": "Move the leader and adjust its influence radius."
+    },
+    "compose": {
+      "title": "Compose",
+      "body": "Alternate formations, cohesion, and repulsion."
+    },
+    "hint": "The swarm keeps evolving behind this panel.",
+    "resume": "Resume experience",
+    "close": "Close introduction"
+  },
+  "drone": {
+    "file": "Drone file",
+    "close": "Close drone file",
+    "speed": "Speed",
+    "direction": "Direction",
+    "velocity": "Velocity",
+    "trail": "Trail",
+    "angle": "Angle",
+    "signal": "Visual signal",
+    "states": {
+      "leader": "Leader",
+      "following": "Follower",
+      "free": "Free"
+    },
+    "notes": {
+      "leader": "This drone is the current leader. Drag to guide and influence the swarm.",
+      "following": "This drone follows the leader and reacts to its influence.",
+      "free": "This drone moves freely according to the swarm rules."
+    }
+  }
+}

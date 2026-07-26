@@ -1,0 +1,129 @@
+{
+  "shell": {
+    "back": "Retour au cabinet",
+    "index": "EXP. 02 / 05",
+    "telemetry": "Télémétrie de l’essaim",
+    "missionState": "État de mission",
+    "leaderActive": "Leader actif",
+    "autonomous": "Autonome",
+    "radarNominal": "RADAR_NOMINAL",
+    "leaderLink": "LEADER_LINK",
+    "autopilotStatus": "AUTO_PILOT",
+    "presentation": "Présentation",
+    "settings": "Réglages",
+    "settingsIndex": "SYS. 02",
+    "closeSettings": "Fermer les réglages",
+    "closePresentation": "Fermer la présentation",
+    "canvasLabel": "Simulation interactive Swarm Intel. Cliquez sur un drone pour choisir un leader, puis glissez pour le guider."
+  },
+  "stats": {
+    "drones": "Drones",
+    "followers": "Suiveurs",
+    "free": "Libres",
+    "mode": "Mode",
+    "zoom": "Zoom",
+    "status": "Statut"
+  },
+  "controls": {
+    "play": "Play",
+    "pause": "Pause",
+    "reset": "Réinitialiser",
+    "snapshot": "Capture",
+    "releaseLeader": "Relâcher leader",
+    "repulsion": "Répulsion",
+    "formations": "Formations",
+    "presets": "Presets",
+    "physics": "Physique",
+    "collectiveRules": "Règles collectives",
+    "signal": "Signal"
+  },
+  "formations": {
+    "default": "Libre",
+    "compact": "Compact",
+    "line": "Ligne",
+    "spiral": "Spirale"
+  },
+  "settings": {
+    "droneCount": "Drones",
+    "maxSpeed": "Vitesse",
+    "cohesion": "Cohésion",
+    "alignment": "Alignement",
+    "separation": "Séparation",
+    "influence": "Rayon d’influence",
+    "trails": "Traînées",
+    "audio": "Audio réactif"
+  },
+  "presets": {
+    "gentle": {
+      "label": "Doux",
+      "hint": "Mouvement fluide et harmonieux"
+    },
+    "chaotic": {
+      "label": "Chaotique",
+      "hint": "Mouvement erratique et imprévisible"
+    },
+    "swarm": {
+      "label": "Essaim",
+      "hint": "Formation dense et coordonnée"
+    },
+    "minimal": {
+      "label": "Minimal",
+      "hint": "Petit groupe contemplatif"
+    }
+  },
+  "help": {
+    "droneCount": "Nombre total de drones dans l’essaim.",
+    "maxSpeed": "Vitesse maximale des drones.",
+    "cohesion": "Force d’attraction vers le centre du groupe.",
+    "alignment": "Tendance à suivre la direction du groupe.",
+    "separation": "Force de répulsion pour éviter les collisions.",
+    "influence": "Rayon d’influence du drone leader.",
+    "trails": "Longueur des traînées lumineuses."
+  },
+  "gesture": {
+    "click": "Clic : choisir le leader",
+    "drag": "Glisser : guider",
+    "scroll": "Molette : rayon / zoom",
+    "camera": "WASD : caméra"
+  },
+  "presentation": {
+    "eyebrow": "Présentation de l’expérience",
+    "title": "Swarm Intel — Intelligence collective",
+    "body": "Un essaim de drones lumineux dont les trajectoires naissent de quelques règles simples. Choisissez un leader, guidez-le et observez le groupe s’organiser.",
+    "choose": {
+      "title": "Choisir",
+      "body": "Cliquez sur un drone pour en faire le leader."
+    },
+    "guide": {
+      "title": "Guider",
+      "body": "Déplacez le leader et ajustez son rayon d’influence."
+    },
+    "compose": {
+      "title": "Composer",
+      "body": "Alternez formations, cohésion et répulsion."
+    },
+    "hint": "L’essaim continue d’évoluer derrière cette fiche.",
+    "resume": "Reprendre l’expérience",
+    "close": "Fermer la présentation"
+  },
+  "drone": {
+    "file": "Fiche drone",
+    "close": "Fermer la fiche drone",
+    "speed": "Vitesse",
+    "direction": "Direction",
+    "velocity": "Vélocité",
+    "trail": "Traînée",
+    "angle": "Angle",
+    "signal": "Signal visuel",
+    "states": {
+      "leader": "Leader",
+      "following": "Suiveur",
+      "free": "Libre"
+    },
+    "notes": {
+      "leader": "Ce drone est le leader actuel. Glissez pour guider et influencer l’essaim.",
+      "following": "Ce drone suit le leader et réagit à son influence.",
+      "free": "Ce drone évolue librement selon les règles de l’essaim."
+    }
+  }
+}

@@ -167,6 +167,110 @@ Typography should feel editorial and engineered. Never introduce a decorative se
 - Language switch has explicit accessible labels.
 - Decorative cosmic/orbital visuals are `aria-hidden`.
 
+## Experience shell — Microcosm pilot
+
+Microcosm is the first reusable experience layout. It is an interactive artificial-life simulation, not a marketing page: the living canvas is always the primary surface and the shared Sorok-Dva identity stays compact.
+
+Desktop structure:
+
+- Keep the experience within one viewport without page scrolling.
+- Replace the current 15vh promotional header with a 64–72px instrument bar.
+- Left side of the bar: `[42]`, `Retour au cabinet`, `EXP. 01 / 05`, then `Microcosm`.
+- Right side: live population telemetry, play/pause, reset, capture, and FR/EN.
+- The simulation canvas fills all remaining height and width except for one intentional control dock.
+- Primary interventions — `Nourrir`, `Toxine`, `Prédateur` — remain immediately available.
+- Presets, display settings, simulation parameters, combat, social behavior, toxins, and infection are secondary controls inside collapsible sections.
+- The organism inspector is a distinct floating or docked `FICHE ORGANISME`, never visually confused with global controls.
+- Notes and keyboard gestures become a compact help strip or drawer instead of a permanent content card.
+
+Two valid layout directions:
+
+1. `Observatoire latéral`: a 336–368px right instrument dock, visually fused to the viewport edge, with the canvas occupying the uninterrupted remainder.
+2. `Console panoramique`: an edge-to-edge canvas with a compact bottom control deck and secondary settings in an off-canvas drawer.
+
+Responsive structure:
+
+- Under 768px, preserve the canvas as the main viewport surface.
+- Use a 56–64px compact top bar and a bottom sheet for controls.
+- Keep play/pause and the three interventions reachable without opening the full settings sheet.
+- The organism inspector becomes a separate bottom sheet with a clear close action.
+- Minimum tap target is 44px; no interaction depends on hover.
+
+Microcosm visual rules:
+
+- Use only the shared `space`, `abyss`, `abyss-2`, `hairline`, `starlight`, `sun`, `sun-deep`, `ion`, `ember`, and `dust` colors.
+- No purple or emerald ambient gradients. Color emitted by simulated organisms may remain inside the canvas.
+- Instrument surfaces use `abyss` at 76–88% opacity, 1px `hairline` borders, 8–12px blur, and restrained 10–16px radii.
+- Global play state and population health use `ion`; Sorok-Dva identity and active controls use `sun`; destructive/toxin actions use `ember`.
+- Use Space Mono for telemetry, coordinates, indices, values, shortcuts, and control labels.
+- Use Space Grotesk for the experiment title and Inter Tight for descriptions and help.
+- Avoid card stacking, duplicated statistics, oversized badges, inflated rounding, and permanent prose beside the simulation.
+
+Functional invariants:
+
+- Preserve canvas pan, zoom, selection, tracking, context-menu interventions, keyboard shortcuts, presets, every simulation slider/toggle, reset, snapshot, and localization.
+- Do not reduce the actual simulation viewport to make room for explanatory copy.
+- The layout must remain usable at 1440×900, 1280×720, 768×1024, and 390×844.
+
+## Shared experience presentation layer
+
+Every experience shell reserves a visible `Présentation` action. It opens a temporary editorial layer over the canvas; explanatory prose must never permanently shrink the simulation.
+
+- Desktop: centered instrument sheet, roughly 620–700px wide, with one short description, three concise reading/interaction cues, a close icon, and one `Reprendre l’expérience` action.
+- Mobile: an inset sheet or bottom sheet with the same content, no background page scroll, and 44px minimum actions.
+- The layer uses the shared `abyss`, `hairline`, `starlight`, `sun`, `ion`, and `dust` tokens. It is editorial and calm, not a marketing modal.
+- Keep copy concrete: what the visitor is looking at, what they can do, and what changes as they interact.
+- Closing the sheet restores the canvas exactly where it was; opening it closes any settings drawer so panels never stack.
+
+## Experience shell — Swarm Intel pilot
+
+Swarm Intel is an interactive collective-intelligence simulation. The user watches luminous drones follow simple steering rules, selects one as a leader, guides it, and changes how the swarm organizes itself. It must feel like the second instrument in the same cabinet as Microcosm while keeping a spatial, tactical identity of its own.
+
+Canonical French presentation copy:
+
+- Title: `Swarm Intel — Intelligence collective`
+- Description: `Un essaim de drones lumineux dont les trajectoires naissent de quelques règles simples. Choisissez un leader, guidez-le et observez le groupe s’organiser.`
+- Cue 01: `Choisir — Cliquez sur un drone pour en faire le leader.`
+- Cue 02: `Guider — Déplacez le leader et ajustez son rayon d’influence.`
+- Cue 03: `Composer — Alternez formations, cohésion et répulsion.`
+
+Desktop structure:
+
+- Keep the entire experience inside one viewport with no document scrolling.
+- Top instrument bar, 64–72px high: `[42]`, `Retour au cabinet`, `EXP. 02 / 05`, `Swarm Intel`; live telemetry for total drones, followers, free drones, active mode, zoom, and FR/EN on the right.
+- The canvas remains the dominant surface. Ambient drone colors and trails belong only inside this canvas.
+- Play/pause, reset, snapshot, the four formations (`Libre`, `Compact`, `Ligne`, `Spirale`), `Relâcher leader`, and `Répulsion` remain immediately legible without turning the whole viewport into a form.
+- Presets (`Doux`, `Chaotique`, `Essaim`, `Minimal`), audio, drone count, max speed, cohesion, alignment, separation, influence radius, and trail length move to a secondary settings drawer.
+- The selected drone becomes a dedicated `FICHE DRONE` surface with state, speed, heading, coordinates, velocity, trail, and color. Never merge it into the global settings.
+- Replace the permanent three-line help card with a compact gesture strip or help action.
+- Include the shared `Présentation` action and presentation layer.
+
+Two valid layout directions:
+
+1. `Table tactique`: edge-to-edge simulation with a compact bottom command deck. Formations read as four precise mode keys; presentation and settings sit at the far right. The selected-drone sheet docks from the left and settings from the right.
+2. `Radar distribué`: edge-to-edge simulation with a narrow left formation rail and a bottom mission strip for play, leader, repulsion, presentation, and settings. Lightweight concentric/radar registration marks may sit behind drones, but must not obstruct trails or imply a different simulation.
+
+Responsive structure:
+
+- Under 768px, use the same compact 56–64px identity bar as Microcosm.
+- Canvas stays primary. Play/pause and the four formation modes remain reachable from the compact bottom deck or one shallow expandable strip.
+- Settings, presentation, and the selected drone each become mutually exclusive sheets.
+- No control depends on hover; all tap targets are at least 44px.
+
+Swarm Intel visual rules:
+
+- Chrome uses only `space`, `abyss`, `abyss-2`, `hairline`, `starlight`, `sun`, `sun-deep`, `ion`, `ember`, and `dust`.
+- Purple or emerald ambient gradients are forbidden in the chrome. Individual drone colors may remain visible inside the simulation canvas.
+- Use `sun` for identity and selected formation, `ion` for live/leader/follower status, and `ember` only for repulsion or a destructive warning.
+- Use Space Mono for telemetry, modes, values, coordinates, and shortcuts; Space Grotesk for the title; Inter Tight for instructions.
+- Instrument borders are square or restrained 4–12px radii. Avoid shadcn card-on-card stacks, oversized status badges, and one long permanent settings form.
+
+Functional invariants:
+
+- Preserve selection, leader dragging, influence-radius scroll, pan/zoom, WASD camera, arrow-key formations, Enter release, Escape pause, Space repulsion, autonomous choreography, sound, presets, every behavior slider, reset, snapshot, and selected-drone telemetry.
+- Preserve all 130+ moving entities without covering the visual field with permanent chrome.
+- The layout must remain usable at 1440×900, 1280×720, 768×1024, and 390×844.
+
 ## Implementation constraints
 
 - Next.js 15 App Router, React 19, TypeScript, Tailwind CSS 4.

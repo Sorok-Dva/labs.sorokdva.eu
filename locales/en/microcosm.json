@@ -11,6 +11,39 @@
       "twoValue": "Ctrl = feed | Shift = toxin | Alt = predator"
     }
   },
+  "shell": {
+    "back": "Back to cabinet",
+    "index": "EXP. 01 / 05",
+    "telemetry": "Live population",
+    "stable": "Transmission stable",
+    "presentation": "Introduction",
+    "presentationEyebrow": "Experience introduction",
+    "presentationTitle": "Microcosm — Artificial Life",
+    "presentationBody": "A predator–prey ecosystem where every creature carries a tiny genome. Watch populations evolve, then intervene directly in their environment.",
+    "presentationHint": "The simulation keeps running behind this panel.",
+    "resumeExperience": "Resume experience",
+    "closePresentation": "Close introduction",
+    "presentationSteps": {
+      "explore": {
+        "title": "Explore",
+        "body": "Zoom in and roam freely across the ecosystem."
+      },
+      "intervene": {
+        "title": "Intervene",
+        "body": "Add food, toxins, or predators."
+      },
+      "observe": {
+        "title": "Observe",
+        "body": "Select a cell and follow its lineage."
+      }
+    },
+    "settings": "Settings",
+    "advancedSettings": "Advanced settings",
+    "closeSettings": "Close settings",
+    "organismFile": "Organism file",
+    "closeOrganism": "Close organism file",
+    "canvasLabel": "Interactive Microcosm simulation. Use the mouse wheel to zoom and drag to move around."
+  },
   "stats": { "herbivores": "Herbivores", "predators": "Predators", "food": "Food" },
   "controls": {
     "title": "Microcosm Controls",

@@ -11,6 +11,39 @@
       "twoValue": "Ctrl = nourrir | Shift = toxine | Alt = prédateur"
     }
   },
+  "shell": {
+    "back": "Retour au cabinet",
+    "index": "EXP. 01 / 05",
+    "telemetry": "Population en direct",
+    "stable": "Transmission stable",
+    "presentation": "Présentation",
+    "presentationEyebrow": "Présentation de l’expérience",
+    "presentationTitle": "Microcosm — Vie artificielle",
+    "presentationBody": "Un écosystème proie–prédateur où chaque créature possède un petit génome. Observez les populations évoluer, puis intervenez directement sur leur environnement.",
+    "presentationHint": "La simulation continue derrière cette fiche.",
+    "resumeExperience": "Reprendre l’expérience",
+    "closePresentation": "Fermer la présentation",
+    "presentationSteps": {
+      "explore": {
+        "title": "Explorer",
+        "body": "Zoomez et parcourez librement l’écosystème."
+      },
+      "intervene": {
+        "title": "Intervenir",
+        "body": "Ajoutez nourriture, toxines ou prédateurs."
+      },
+      "observe": {
+        "title": "Observer",
+        "body": "Sélectionnez une cellule et suivez sa lignée."
+      }
+    },
+    "settings": "Réglages",
+    "advancedSettings": "Réglages avancés",
+    "closeSettings": "Fermer les réglages",
+    "organismFile": "Fiche organisme",
+    "closeOrganism": "Fermer la fiche organisme",
+    "canvasLabel": "Simulation interactive Microcosm. Utilisez la molette pour zoomer et faites glisser pour vous déplacer."
+  },
   "stats": { "herbivores": "Herbivores", "predators": "Prédateurs", "food": "Nourriture" },
   "controls": {
     "title": "Contrôles Microcosm",

@@ -8,10 +8,12 @@ type Dict = Record<string, any>
 // Import namespaces here
 import microcosm_en from "@/locales/en/microcosm.json"
 import microcosm_fr from "@/locales/fr/microcosm.json"
+import swarm_en from "@/locales/en/swarm.json"
+import swarm_fr from "@/locales/fr/swarm.json"
 
 const DICTS: Record<Lang, Record<string, Dict>> = {
-  en: { microcosm: microcosm_en },
-  fr: { microcosm: microcosm_fr },
+  en: { microcosm: microcosm_en, swarm: swarm_en },
+  fr: { microcosm: microcosm_fr, swarm: swarm_fr },
 }
 
 function get(obj: Dict, path: string): any {
@@ -66,4 +68,3 @@ export function useI18n() {
   if (!ctx) throw new Error("useI18n must be used within I18nProvider")
   return ctx
 }
-

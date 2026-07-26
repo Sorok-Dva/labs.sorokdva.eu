@@ -9,6 +9,12 @@ export function LanguageSwitcher() {
   const { lang, setLang } = useI18n()
   const pathname = usePathname()
   const isHome = pathname === "/"
+  const isExperience = pathname.startsWith("/experiences/")
+  const className = isHome
+    ? "language-switcher language-switcher--home"
+    : isExperience
+      ? "language-switcher language-switcher--experience"
+      : "language-switcher"
 
   return (
     <ToggleGroup
@@ -20,7 +26,7 @@ export function LanguageSwitcher() {
       variant="outline"
       size="sm"
       aria-label="Langue"
-      className={isHome ? "language-switcher language-switcher--home" : "language-switcher"}
+      className={className}
     >
       <ToggleGroupItem value="fr" aria-label="Français">
         FR

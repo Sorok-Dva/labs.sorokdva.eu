@@ -76,7 +76,7 @@ class QuadTree {
     this.divided = true
   }
 
-  insert(x: number, y: number, i: number) {
+  insert(x: number, y: number, i: number): boolean {
     if (!this.contains(x, y)) return false
     if (this.points.length < this.capacity) {
       this.points.push({ x, y, i })
